@@ -1,0 +1,13 @@
+.spinner {
+  display: inline-block;
+  width: 25px;
+  vertical-align: middle;
+}
+
+.hidden {
+  opacity: 0;
+}
+
+.input-error {
+  border: 1px solid red;
+}

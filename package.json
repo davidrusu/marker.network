@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A minimal Electron application written with Typescript",
   "scripts": {
+    "build-lines-are-rusty-linux": "cargo build --target x86_64-unknown-linux-musl --release --manifest-path lines-are-rusty/Cargo.toml && cp ./lines-are-rusty/target/x86_64-unknown-linux-musl/release/lines-are-rusty ./dist/lines-are-rusty",
     "build": "tsc",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
@@ -27,8 +28,11 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "@types/jquery": "^3.5.5",
     "@types/sqlite3": "^3.1.7",
-    "sqlite3": "^5.0.0",
-    "electron-log": "^4.2.4"
+    "electron-log": "^4.2.4",
+    "jquery": "^3.6.0",
+    "remarkable-typescript": "^1.1.2",
+    "sqlite3": "^5.0.0"
   }
 }
