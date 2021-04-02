@@ -1,21 +1,32 @@
 import { app, BrowserWindow } from "electron";
+import * as log from "electron-log";
 import * as path from "path";
+import * as fs from "fs";
+import * as sqlite3 from "sqlite3";
+
+const APP_DATA = path.join(app.getPath("appData"), "marker.network");
+log.info("APP_DATA", APP_DATA);
+
+fs.mkdir(APP_DATA, { recursive: true }, (err) => {
+  if (err) {
+    log.error("Failed to create APP_DATA directory", APP_DATA, err);
+  }
+});
+
+const db = new sqlite3.Database(path.join(APP_DATA, "marker.db"));
 
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     height: 600,
+    width: 800,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
-    width: 800,
   });
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "../index.html"));
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished
