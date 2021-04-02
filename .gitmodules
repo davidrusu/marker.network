@@ -1,0 +1,3 @@
+[submodule "lines-are-rusty"]
+	path = lines-are-rusty
+	url = https://github.com/ax3l/lines-are-rusty
