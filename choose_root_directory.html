@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Choose Root Directory</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Setting up your Website</h1>
+    <p>TODO: add a drawing explaining how marker.network works</p>
+
+    <p>
+      Make sure to choose a new folder name, one that's different from any of
+      the existing top-level folders on your device
+    </p>
+    <input
+      id="root-directory-input"
+      type="text"
+      placeholder="Site Folder Name"
+    />
+    <div id="root-directory-error-msg" class="error-msg hidden">
+      You shouldn't see this
+    </div>
+    <div id="directory-spinner" class="spinner hidden">
+      <p>This may take a while...</p>
+      <svg
+        style="margin: auto; background: #fff; display: block"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="xMidYMid"
+      >
+        <rect x="19" y="19" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+        <rect x="40" y="19" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0.09191176470588235s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+        <rect x="61" y="19" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0.1838235294117647s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+        <rect x="19" y="40" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0.6433823529411764s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+        <rect x="61" y="40" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0.275735294117647s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+        <rect x="19" y="61" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0.551470588235294s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+        <rect x="40" y="61" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0.45955882352941174s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+        <rect x="61" y="61" width="20" height="20" fill="#ffffff">
+          <animate
+            attributeName="fill"
+            values="#000000;#ffffff;#ffffff"
+            keyTimes="0;0.125;1"
+            dur="0.7352941176470588s"
+            repeatCount="indefinite"
+            begin="0.3676470588235294s"
+            calcMode="discrete"
+          ></animate>
+        </rect>
+      </svg>
+    </div>
+
+    <script>
+      require("./dist/choose_root_directory.js");
+    </script>
+  </body>
+</html>
