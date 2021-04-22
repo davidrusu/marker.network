@@ -1,23 +1,41 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as log from "electron-log";
 import * as path from "path";
-import * as fs from "fs";
+import * as fs from "fs/promises";
 import * as sqlite3 from "better-sqlite3";
 import { execFile } from "child_process";
 import { Remarkable, ItemResponse } from "remarkable-typescript";
 import * as uuid from "uuid";
 import { promisify } from "util";
+import * as handlebars from "handlebars";
+
+var indexTemplate = handlebars.compile(`
+<html>
+<head>
+</head>
+<body>
+{{#each pages}}
+  <div class="nb-page">
+    <img class="nb-page-svg" src="{{this}}"/>
+  </div>
+{{/each}}
+</body>
+</html>
+`);
 
 const APP_DATA = path.join(app.getPath("appData"), "marker.network");
 log.info("APP_DATA", APP_DATA);
-fs.mkdir(APP_DATA, { recursive: true }, (err) => {
-  if (err) log.error(`Failed to create APP_DATA: ${APP_DATA}`, err);
-});
+fs.mkdir(APP_DATA, { recursive: true }).then(
+  () => {},
+  (err) => {
+    if (err) log.error(`Failed to create APP_DATA: ${APP_DATA}`, err);
+  }
+);
 
 const db = new sqlite3(path.join(APP_DATA, "marker.db"), {
   verbose: log.info,
 });
-let rM_CLIENT: Remarkable;
+let rM_CLIENT = new Remarkable();
 
 function setupDatabase() {
   db.exec(`
@@ -73,24 +91,32 @@ function createDesignWebsiteWindow(): BrowserWindow {
   return window;
 }
 
-function linesAreRusty() {
-  let proc = execFile(path.join(__dirname, "lines-are-rusty"), ["--help"]);
-  proc.stdout.on("data", (data) => {
-    log.info(`lines-are-rusty output: ${data}`);
-  });
-  proc.on("exit", (code) => {
-    log.info(`lines-are-rusty exited with code ${code}`);
+async function linesAreRusty(input: string, output: string) {
+  log.info("Running lines-are-rusty with", input, output);
+  await fs.mkdir(path.dirname(output), { recursive: true });
+
+  return new Promise((resolve) => {
+    let proc = execFile(path.join(__dirname, "lines-are-rusty"), [
+      "--no-crop",
+      input,
+      "-o",
+      output,
+    ]);
+    proc.stdout.on("data", (data) => {
+      log.info(`lines-are-rusty output: ${data}`);
+    });
+    proc.on("exit", (code) => {
+      log.info(`lines-are-rusty exited with code ${code}`);
+      resolve(output);
+    });
   });
 }
 
-async function registerDevice(): Promise<boolean> {
+function registerDevice(): boolean {
   let deviceToken = loadDeviceToken();
   if (deviceToken) {
-    rM_CLIENT = new Remarkable({ deviceToken });
-    await rM_CLIENT.refreshToken();
     return false;
   } else {
-    rM_CLIENT = new Remarkable();
     let win = createRegisterWindow();
     closeAllWindowsExcept(win);
     return true;
@@ -118,9 +144,9 @@ function designWebsite(): boolean {
   return true;
 }
 
-async function appFlow() {
+function appFlow() {
   setupDatabase();
-  if (await registerDevice()) return;
+  if (registerDevice()) return;
   if (chooseRootDirectory()) return;
   if (designWebsite()) return;
 }
@@ -131,16 +157,17 @@ function closeAllWindowsExcept(win: BrowserWindow) {
     .forEach((window) => window.close());
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on("ready", async () => {
-  await appFlow();
+app.on("ready", () => {
+  // HACK! for some reason async ipc stalls and this
+  // setInterval seems to keep things running.
+  // I have no clue what's happening here.
+  setInterval(() => {}, 500);
+  appFlow();
 
-  app.on("activate", async () => {
+  app.on("activate", () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) await appFlow();
+    if (BrowserWindow.getAllWindows().length === 0) appFlow();
   });
 });
 
@@ -163,12 +190,12 @@ function loadDeviceToken(): string {
   }
 }
 
-function loadDeviceTokenId(): Promise<number> {
+function loadDeviceTokenId(deviceToken: string): Promise<number> {
   let row = db
     .prepare(
       "SELECT id as device_token_id FROM device_tokens WHERE device_token = ?"
     )
-    .get(rM_CLIENT.deviceToken);
+    .get(deviceToken);
   if (row) {
     log.info("Got device token id", row.device_token_id);
     return row.device_token_id;
@@ -184,7 +211,7 @@ function persistDeviceToken(deviceToken: string) {
 }
 
 function loadRootDirectory(): string {
-  let deviceTokenId = loadDeviceTokenId();
+  let deviceTokenId = loadDeviceTokenId(loadDeviceToken());
   let row = db
     .prepare("SELECT root_id FROM websites WHERE device_token_id = ?")
     .get(deviceTokenId);
@@ -198,7 +225,7 @@ function loadRootDirectory(): string {
 }
 
 function persistWebsiteRoot(directoryId: string) {
-  let deviceTokenId = loadDeviceTokenId();
+  let deviceTokenId = loadDeviceTokenId(loadDeviceToken());
   db.prepare(
     "INSERT INTO websites(device_token_id, root_id) VALUES (?, ?)"
   ).run(deviceTokenId, directoryId);
@@ -208,8 +235,8 @@ ipcMain.handle("link-device", async (event, otc) => {
   try {
     const deviceToken = await rM_CLIENT.register({ code: otc });
     log.info("Persisting device token", deviceToken);
-    await persistDeviceToken(deviceToken);
-    await appFlow();
+    persistDeviceToken(deviceToken);
+    appFlow();
     return { success: true };
   } catch (error) {
     log.error("Failed to register device", error);
@@ -218,6 +245,11 @@ ipcMain.handle("link-device", async (event, otc) => {
 });
 
 ipcMain.handle("create-root-directory", async (event, directory) => {
+  if (!rM_CLIENT.deviceToken) {
+    rM_CLIENT.deviceToken = loadDeviceToken();
+    await rM_CLIENT.refreshToken();
+  }
+
   let norm = (s: string) => s.trim().replace("  ", " ");
   let normed = norm(directory);
   while (normed !== directory) {
@@ -240,9 +272,8 @@ ipcMain.handle("create-root-directory", async (event, directory) => {
       let directoryId = uuid.v4();
       log.info("Creating directory under ID", directoryId);
       let rootId = await rM_CLIENT.createDirectory(directory, directoryId);
-      // rootId is the same as directoryId
-      await persistWebsiteRoot(rootId);
-      await appFlow();
+      persistWebsiteRoot(rootId);
+      appFlow();
       return {
         success: true,
         msg: "Directory was created on your device",
@@ -260,5 +291,61 @@ ipcMain.handle("create-root-directory", async (event, directory) => {
       success: false,
       msg: `Please choose a unique folder name, you already have a folder named '${directory}'`,
     };
+  }
+});
+
+ipcMain.handle("load-preview", async () => {
+  if (!rM_CLIENT.deviceToken) {
+    rM_CLIENT.deviceToken = loadDeviceToken();
+    await rM_CLIENT.refreshToken();
+  }
+
+  log.info("Loading preview");
+  let rootId = loadRootDirectory();
+  let allItems = await rM_CLIENT.getAllItems();
+  let siteItems = allItems.filter((i) => i.Parent === rootId);
+  let indexItems = siteItems.filter((i) => i.VissibleName === "Index");
+  console.log("Index", indexItems);
+  if (indexItems.length > 0) {
+    let index = indexItems[0];
+    let zip = await rM_CLIENT.downloadZip(index.ID);
+    let inputDir = path.join(__dirname, "input");
+    await fs.mkdir(inputDir, { recursive: true });
+    let indexRawPath = path.join(inputDir, "index-extracted");
+
+    let zipPath = path.join(inputDir, "index.zip");
+    await fs.writeFile(zipPath, zip);
+
+    return new Promise((resolve, reject) => {
+      let proc = execFile("unzip", ["-o", zipPath, "-d", indexRawPath]);
+      proc.stdout.on("data", (data) => {
+        log.info(`unzip output: ${data}`);
+      });
+      proc.on("exit", (code) => {
+        log.info(`unzip exited with code ${code}`);
+        let indexPageDir = path.join(indexRawPath, index.ID);
+        fs.readdir(indexPageDir).then((indexFiles) => {
+          log.info("Unzipped index", indexFiles);
+          Promise.all(
+            indexFiles
+              .filter((p) => path.extname(p) === ".rm")
+              .map((p) => {
+                let page = path.basename(p, ".rm");
+                return linesAreRusty(
+                  path.join(indexPageDir, p),
+                  path.join(__dirname, "generated", "svgs", `index-${page}.svg`)
+                );
+              })
+          ).then(async (ps) => {
+            log.info("templating", ps);
+            let indexHtml = path.join(__dirname, "generated", "index.html");
+            await fs.writeFile(indexHtml, indexTemplate({ pages: ps }));
+            resolve(indexHtml);
+          });
+        });
+      });
+    });
+  } else {
+    console.log("No index yet");
   }
 });

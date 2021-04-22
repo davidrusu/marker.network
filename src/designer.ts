@@ -11,7 +11,10 @@ function reloadDesigner() {
   console.log("reloading");
   $("#designer-reload").prop("disabled", true);
   setTimeout(() => $("#designer-reload").prop("disabled", false), 5000);
-  ipcRenderer.invoke("load-preview");
+  ipcRenderer.invoke("load-preview").then((preview_url) => {
+    console.log("Got preview url", preview_url);
+    $("#preview-frame").attr("src", preview_url);
+  });
 }
 
 $(document).ready(() => {

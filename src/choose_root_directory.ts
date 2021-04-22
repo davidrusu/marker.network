@@ -18,6 +18,8 @@ function createRootDirectory() {
       $("#root-directory-error-msg").text(resp.msg).removeClass("hidden");
     }
   });
+  // ipcRenderer.send("create-root-directory", directory);
+  $("#root-directory-error-msg").addClass("hidden");
   $("#directory-spinner").removeClass("hidden");
 }
 

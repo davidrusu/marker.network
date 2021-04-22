@@ -1,3 +1,10 @@
+body {
+  margin: 0px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .spinner {
   display: inline-block;
   width: 25px;
@@ -10,4 +17,15 @@
 
 .input-error {
   border: 1px solid red;
+}
+
+.designer-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.designer-preview {
+  flex-grow: 1;
+  margin: 24px 24px;
 }

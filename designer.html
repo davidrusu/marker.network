@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Designer</h1>
+    <div class="title">Designer</div>
     <div class="designer-container">
-      <div class="designer-help">TODO! We will extend these docs</div>
-      <div class="designer-preview">
+      <div class="designer-controls">
         <button id="designer-reload">Reload</button>
         <button id="designer-publish">Publish</button>
       </div>
+      <iframe class="designer-preview" id="preview-frame" src=""></iframe>
     </div>
     <script>
       require("./dist/designer.js");

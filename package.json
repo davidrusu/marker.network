@@ -1,7 +1,7 @@
 {
-  "name": "electron-quick-start-typescript",
+  "name": "Marker Network",
   "version": "1.0.0",
-  "description": "A minimal Electron application written with Typescript",
+  "description": "A static site generator for the reMarkable Tablet",
   "scripts": {
     "build-lines-are-rusty-linux": "cargo build --target x86_64-unknown-linux-musl --release --manifest-path lines-are-rusty/Cargo.toml && cp ./lines-are-rusty/target/x86_64-unknown-linux-musl/release/lines-are-rusty ./dist/lines-are-rusty",
     "build": "tsc",
@@ -10,16 +10,9 @@
     "start": "npm run build && electron ./dist/main.js"
   },
   "repository": "https://github.com/electron/electron-quick-start-typescript",
-  "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo",
-    "typescript"
-  ],
-  "author": "GitHub",
-  "license": "CC0-1.0",
+  "keywords": ["Electron", "quick", "start", "tutorial", "demo", "typescript"],
+  "author": "David Rusu",
+  "license": "GPL-3.0",
   "devDependencies": {
     "@types/better-sqlite3": "^5.4.1",
     "@types/jquery": "^3.5.5",
@@ -34,6 +27,7 @@
   "dependencies": {
     "better-sqlite3": "^7.1.4",
     "electron-log": "^4.2.4",
+    "handlebars": "^4.7.7",
     "jquery": "^3.6.0",
     "remarkable-typescript": "git://github.com/davidrusu/reMarkable-typescript.git#patch-1",
     "uuid": "^8.2.0"
