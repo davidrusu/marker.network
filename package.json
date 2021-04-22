@@ -1,16 +1,22 @@
 {
-  "name": "Marker Network",
+  "name": "marker-network",
   "version": "1.0.0",
   "description": "A static site generator for the reMarkable Tablet",
   "scripts": {
-    "build-lines-are-rusty-linux": "cargo build --target x86_64-unknown-linux-musl --release --manifest-path lines-are-rusty/Cargo.toml && cp ./lines-are-rusty/target/x86_64-unknown-linux-musl/release/lines-are-rusty ./dist/lines-are-rusty",
-    "build": "tsc",
+    "build": "./build.sh && tsc",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js"
   },
   "repository": "https://github.com/electron/electron-quick-start-typescript",
-  "keywords": ["Electron", "quick", "start", "tutorial", "demo", "typescript"],
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo",
+    "typescript"
+  ],
   "author": "David Rusu",
   "license": "GPL-3.0",
   "devDependencies": {
