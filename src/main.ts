@@ -7,35 +7,19 @@ import { execFile } from "child_process";
 import { Remarkable, ItemResponse } from "remarkable-typescript";
 import * as uuid from "uuid";
 import { promisify } from "util";
-import * as handlebars from "handlebars";
-
-var indexTemplate = handlebars.compile(`
-<html>
-<head>
-</head>
-<body>
-{{#each pages}}
-  <div class="nb-page">
-    <img class="nb-page-svg" src="{{this}}"/>
-  </div>
-{{/each}}
-</body>
-</html>
-`);
 
 const APP_DATA = path.join(app.getPath("appData"), "marker.network");
-log.info("APP_DATA", APP_DATA);
+
 fs.mkdir(APP_DATA, { recursive: true }).then(
-  () => {},
-  (err) => {
-    if (err) log.error(`Failed to create APP_DATA: ${APP_DATA}`, err);
-  }
+  () => log.info("APP_DATA", APP_DATA),
+  (err) => log.error(`Failed to create APP_DATA: ${APP_DATA}`, err)
 );
 
 const db = new sqlite3(path.join(APP_DATA, "marker.db"), {
   verbose: log.info,
 });
-let rM_CLIENT = new Remarkable();
+
+let rM = new Remarkable();
 
 function setupDatabase() {
   db.exec(`
@@ -65,7 +49,7 @@ function createRegisterWindow(): BrowserWindow {
   return window;
 }
 
-function createRootDirectoryWindow(): BrowserWindow {
+function createChooseFolderWindow(): BrowserWindow {
   const window = new BrowserWindow({
     height: 600,
     width: 800,
@@ -91,23 +75,75 @@ function createDesignWebsiteWindow(): BrowserWindow {
   return window;
 }
 
-async function linesAreRusty(input: string, output: string) {
-  log.info("Running lines-are-rusty with", input, output);
-  await fs.mkdir(path.dirname(output), { recursive: true });
+function materialPath(): string {
+  return path.join(APP_DATA, "material");
+}
 
+function siteConfigPath(): string {
+  return path.join(APP_DATA, "site_config.json");
+}
+
+async function loadSiteConfig(): Promise<{
+  site_root: string;
+  title: string;
+  theme: string;
+}> {
+  let siteConfigData = await fs.readFile(siteConfigPath(), "utf-8");
+  return JSON.parse(siteConfigData);
+}
+
+async function saveSiteConfig(config: {
+  site_root: string;
+  title: string;
+  theme: string;
+}): Promise<void> {
+  let configString = JSON.stringify(config, null, 2);
+  let tempFile = `${siteConfigPath()}.tmp`;
+  await fs.writeFile(tempFile, configString, "utf-8");
+  await fs.rename(tempFile, siteConfigPath());
+}
+
+async function siteGeneratorInit(siteName: string): Promise<number> {
+  log.info("Initializing site with site generator into", materialPath());
+  let deviceToken = loadDeviceToken();
   return new Promise((resolve) => {
-    let proc = execFile(path.join(__dirname, "lines-are-rusty"), [
-      "--no-crop",
-      input,
-      "-o",
-      output,
-    ]);
-    proc.stdout.on("data", (data) => {
-      log.info(`lines-are-rusty output: ${data}`);
+    let proc = execFile(
+      path.join(__dirname, "marker-network-site-generator"),
+      [siteConfigPath(), "init", deviceToken, siteName],
+      { cwd: __dirname }
+    );
+    proc.stderr.on("data", (data) => {
+      log.info(`site-generator stderr: ${data}`);
     });
-    proc.on("exit", (code) => {
-      log.info(`lines-are-rusty exited with code ${code}`);
-      resolve(output);
+    proc.stdout.on("data", (data) => {
+      log.info(`site-generator stdout: ${data}`);
+    });
+    proc.on("exit", (exitCode) => {
+      log.info(`site-generator exited with code ${exitCode}`);
+      resolve(exitCode);
+    });
+  });
+}
+
+async function siteGeneratorFetch(): Promise<number> {
+  log.info("Fetching material with site generator into", materialPath());
+  let deviceToken = loadDeviceToken();
+  return new Promise((resolve) => {
+    let proc = execFile(path.join(__dirname, "marker-network-site-generator"), [
+      siteConfigPath(),
+      "fetch",
+      deviceToken,
+      materialPath(),
+    ]);
+    proc.stderr.on("data", (data) => {
+      log.info(`site-generator stderr: ${data}`);
+    });
+    proc.stdout.on("data", (data) => {
+      log.info(`site-generator stdout: ${data}`);
+    });
+    proc.on("exit", (exitCode) => {
+      log.info(`site-generator exited with code ${exitCode}`);
+      resolve(exitCode);
     });
   });
 }
@@ -123,15 +159,15 @@ function registerDevice(): boolean {
   }
 }
 
-function chooseRootDirectory(): boolean {
+async function setupSiteConfig(): Promise<boolean> {
   log.info("Choosing root directory");
-  let rootDir = loadRootDirectory();
-  if (rootDir) {
-    log.info("Directory", rootDir);
+  try {
+    let siteConfig = await loadSiteConfig();
+    log.info("Found existing site config, skipping setup", siteConfig);
     return false;
-  } else {
-    log.info("No root directory, prompting user to choose one");
-    let win = createRootDirectoryWindow();
+  } catch (e) {
+    log.info("No site config, going through site config setup");
+    let win = createChooseFolderWindow();
     closeAllWindowsExcept(win);
     return true;
   }
@@ -144,10 +180,10 @@ function designWebsite(): boolean {
   return true;
 }
 
-function appFlow() {
+async function appFlow() {
   setupDatabase();
   if (registerDevice()) return;
-  if (chooseRootDirectory()) return;
+  if (await setupSiteConfig()) return;
   if (designWebsite()) return;
 }
 
@@ -157,12 +193,12 @@ function closeAllWindowsExcept(win: BrowserWindow) {
     .forEach((window) => window.close());
 }
 
-app.on("ready", () => {
+app.on("ready", async () => {
   // HACK! for some reason async ipc stalls and this
   // setInterval seems to keep things running.
   // I have no clue what's happening here.
   setInterval(() => {}, 500);
-  appFlow();
+  await appFlow();
 
   app.on("activate", () => {
     // On macOS it's common to re-create a window in the app when the
@@ -233,7 +269,7 @@ function persistWebsiteRoot(directoryId: string) {
 
 ipcMain.handle("link-device", async (event, otc) => {
   try {
-    const deviceToken = await rM_CLIENT.register({ code: otc });
+    const deviceToken = await rM.register({ code: otc });
     log.info("Persisting device token", deviceToken);
     persistDeviceToken(deviceToken);
     appFlow();
@@ -244,108 +280,35 @@ ipcMain.handle("link-device", async (event, otc) => {
   }
 });
 
-ipcMain.handle("create-root-directory", async (event, directory) => {
-  if (!rM_CLIENT.deviceToken) {
-    rM_CLIENT.deviceToken = loadDeviceToken();
-    await rM_CLIENT.refreshToken();
-  }
-
+ipcMain.handle("init-site", async (event, rMFolderName) => {
   let norm = (s: string) => s.trim().replace("  ", " ");
-  let normed = norm(directory);
-  while (normed !== directory) {
-    directory = normed;
-    normed = norm(directory);
+  let normed = norm(rMFolderName);
+  while (normed !== rMFolderName) {
+    rMFolderName = normed;
+    normed = norm(rMFolderName);
   }
 
-  log.info("Creating root directory on device", directory);
+  try {
+    log.info("Creating site folder on device", rMFolderName);
+    await siteGeneratorInit(rMFolderName);
 
-  // Check if a root directory with this name already exists.
-  let allItems = await rM_CLIENT.getAllItems();
-  let rootFolders = allItems
-    .filter((i) => i.Parent === "")
-    .filter((i) => i.Type === "CollectionType");
-  log.info("Inspecting root folders for directory:", rootFolders, directory);
+    appFlow();
 
-  if (rootFolders.every((i) => i.VissibleName !== directory)) {
-    // No directories with this name exist, creating it now.
-    try {
-      let directoryId = uuid.v4();
-      log.info("Creating directory under ID", directoryId);
-      let rootId = await rM_CLIENT.createDirectory(directory, directoryId);
-      persistWebsiteRoot(rootId);
-      appFlow();
-      return {
-        success: true,
-        msg: "Directory was created on your device",
-      };
-    } catch (e) {
-      log.error("Failed to create directory", e);
-      return {
-        success: false,
-        msg: `Failed to create directory, got error from reMarkable cloud API ${e}`,
-      };
-    }
-  } else {
-    log.info("Chosen root is not unique");
+    return {
+      success: true,
+      msg: "Directory was created on your device",
+    };
+  } catch (e) {
+    log.error("Failed to create directory", e);
     return {
       success: false,
-      msg: `Please choose a unique folder name, you already have a folder named '${directory}'`,
+      msg: `Failed to create directory, got error from reMarkable cloud API ${e}`,
     };
   }
 });
 
 ipcMain.handle("load-preview", async () => {
-  if (!rM_CLIENT.deviceToken) {
-    rM_CLIENT.deviceToken = loadDeviceToken();
-    await rM_CLIENT.refreshToken();
-  }
-
   log.info("Loading preview");
-  let rootId = loadRootDirectory();
-  let allItems = await rM_CLIENT.getAllItems();
-  let siteItems = allItems.filter((i) => i.Parent === rootId);
-  let indexItems = siteItems.filter((i) => i.VissibleName === "Index");
-  console.log("Index", indexItems);
-  if (indexItems.length > 0) {
-    let index = indexItems[0];
-    let zip = await rM_CLIENT.downloadZip(index.ID);
-    let inputDir = path.join(__dirname, "input");
-    await fs.mkdir(inputDir, { recursive: true });
-    let indexRawPath = path.join(inputDir, "index-extracted");
-
-    let zipPath = path.join(inputDir, "index.zip");
-    await fs.writeFile(zipPath, zip);
-
-    return new Promise((resolve, reject) => {
-      let proc = execFile("unzip", ["-o", zipPath, "-d", indexRawPath]);
-      proc.stdout.on("data", (data) => {
-        log.info(`unzip output: ${data}`);
-      });
-      proc.on("exit", (code) => {
-        log.info(`unzip exited with code ${code}`);
-        let indexPageDir = path.join(indexRawPath, index.ID);
-        fs.readdir(indexPageDir).then((indexFiles) => {
-          log.info("Unzipped index", indexFiles);
-          Promise.all(
-            indexFiles
-              .filter((p) => path.extname(p) === ".rm")
-              .map((p) => {
-                let page = path.basename(p, ".rm");
-                return linesAreRusty(
-                  path.join(indexPageDir, p),
-                  path.join(__dirname, "generated", "svgs", `index-${page}.svg`)
-                );
-              })
-          ).then(async (ps) => {
-            log.info("templating", ps);
-            let indexHtml = path.join(__dirname, "generated", "index.html");
-            await fs.writeFile(indexHtml, indexTemplate({ pages: ps }));
-            resolve(indexHtml);
-          });
-        });
-      });
-    });
-  } else {
-    console.log("No index yet");
-  }
+  let exitCode = await siteGeneratorFetch();
+  log.info(`Finished fetch exit=${exitCode}`);
 });

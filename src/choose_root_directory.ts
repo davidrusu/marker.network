@@ -1,13 +1,14 @@
 import { ipcRenderer } from "electron";
 import * as $ from "jquery";
+import { spinner } from "./nice_stuff";
 
 function createRootDirectory() {
   const directory = $("#root-directory-input").val();
   console.log("Creating root directory", directory);
   // TODO: validate directory name
 
-  ipcRenderer.invoke("create-root-directory", directory).then((resp) => {
-    $("#directory-spinner").addClass("hidden");
+  ipcRenderer.invoke("init-site", directory).then((resp) => {
+    $("#directory-spinner").empty();
     if (resp.success) {
       console.log("Success!");
       $("#root-directory-input").removeClass("input-error");
@@ -20,7 +21,7 @@ function createRootDirectory() {
   });
   // ipcRenderer.send("create-root-directory", directory);
   $("#root-directory-error-msg").addClass("hidden");
-  $("#directory-spinner").removeClass("hidden");
+  $("#directory-spinner").empty().append(spinner);
 }
 
 $(document).ready(() => {

@@ -33,7 +33,6 @@
   "dependencies": {
     "better-sqlite3": "^7.1.4",
     "electron-log": "^4.2.4",
-    "handlebars": "^4.7.7",
     "jquery": "^3.6.0",
     "remarkable-typescript": "git://github.com/davidrusu/reMarkable-typescript.git#patch-1",
     "uuid": "^8.2.0"

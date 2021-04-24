@@ -4,3 +4,5 @@ set -ev;
 cargo build --target x86_64-unknown-linux-musl --release --manifest-path marker-network-site-generator/Cargo.toml
 
 cp ./marker-network-site-generator/target/x86_64-unknown-linux-musl/release/marker-network-site-generator ./dist/marker-network-site-generator
+cp -r ./marker-network-site-generator/starter ./dist/starter
+cp -r ./marker-network-site-generator/themes ./dist/themes
