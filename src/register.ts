@@ -1,22 +1,29 @@
 import { ipcRenderer } from "electron";
 import * as $ from "jquery";
+import { spinner } from "./nice_stuff";
 
 function attemptToRegister() {
   const oneTimeCode = $("#one-time-code").val();
   console.log("Attempting to register with OTC: ", oneTimeCode);
   ipcRenderer.invoke("link-device", oneTimeCode).then((resp) => {
-    $("#register-spinner").addClass("hidden");
+    $("#register-spinner").empty();
     if (resp.success) {
       console.log("Success!");
       $("#one-time-code").removeClass("input-error");
     } else {
       console.log("Bad OTC, failed to register");
       $("#one-time-code").addClass("input-error");
+      $("#register-error-msg").text(
+        "Something's wrong with that code, please double check it and try again"
+      );
     }
   });
-  $("#register-spinner").removeClass("hidden");
+  $("#register-error-msg").empty();
+  $("#register-spinner").empty();
+  $("#register-spinner").append(spinner);
 }
 
 $(document).ready(() => {
-  $("#one-time-code").on("change", attemptToRegister);
+  $("#one-time-code");
+  $("#register-btn").click(attemptToRegister);
 });

@@ -138,10 +138,12 @@ async function siteGeneratorFetch(): Promise<number> {
 }
 
 async function registerDevice(): Promise<boolean> {
-  let deviceToken = await loadDeviceToken();
-  if (deviceToken) {
+  try {
+    let deviceToken = await loadDeviceToken();
+    log.info("Found existing device token, skipping registration");
     return false;
-  } else {
+  } catch (e) {
+    log.info("No device token found, registering device");
     let win = createRegisterWindow();
     closeAllWindowsExcept(win);
     return true;

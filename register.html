@@ -6,116 +6,63 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Register Device</h1>
-    <p>TODO: add a drawing explaining how marker.network works</p>
+    <div class="container horizontal">
+      <img class="instructions" src="assets/register.svg" />
+      <div class="container vertical">
+        <h1>Register Device</h1>
+        <p>
+          We need to link this app with your reMarkable tablet through the
+          reMarkable Cloud service
+        </p>
 
-    <a target="_blank" href="https://my.remarkable.com/connect/desktop">
-      https://my.remarkable.com/connect/desktop
-    </a>
-    <p>
-      <em>
-        If you don't see a one-time code after logging into your reMarkable
-        account, You may need to click the link once more.
-      </em>
-    </p>
-    <input id="one-time-code" type="text" placeholder="One Time Code" />
-    <div id="register-spinner" class="spinner hidden">
-      <svg
-        style="margin: auto; background: #fff; display: block"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="xMidYMid"
-      >
-        <rect x="19" y="19" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-        <rect x="40" y="19" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0.09191176470588235s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-        <rect x="61" y="19" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0.1838235294117647s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-        <rect x="19" y="40" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0.6433823529411764s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-        <rect x="61" y="40" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0.275735294117647s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-        <rect x="19" y="61" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0.551470588235294s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-        <rect x="40" y="61" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0.45955882352941174s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-        <rect x="61" y="61" width="20" height="20" fill="#ffffff">
-          <animate
-            attributeName="fill"
-            values="#000000;#ffffff;#ffffff"
-            keyTimes="0;0.125;1"
-            dur="0.7352941176470588s"
-            repeatCount="indefinite"
-            begin="0.3676470588235294s"
-            calcMode="discrete"
-          ></animate>
-        </rect>
-      </svg>
+        <a target="_blank" href="https://my.remarkable.com/connect/desktop">
+          https://my.remarkable.com/connect/desktop
+        </a>
+        <p>
+          <em>
+            If you don't see a one-time code after logging into your reMarkable
+            account, You may need to click the link once more.
+          </em>
+        </p>
+        <div class="container horizontal">
+          <input id="one-time-code" type="text" placeholder="One Time Code" />
+          <button id="register-btn">Register</button>
+        </div>
+        <div id="register-spinner" class="spinner"></div>
+        <div id="register-error-msg" class="error-msg"></div>
+
+        <h2>
+          <em>A note on privacy, please read:</em>
+        </h2>
+        <p>
+          This one time code is used to generate a "device token", this device
+          token can be used to read and write to your reMarkable tablet. It's
+          important that you don't share this code with anyone otherwise you'd
+          be handing over the keys to your personal notes and thoughts.
+        </p>
+        <p>
+          In order for <strong>marker.network</strong> to function, we need to
+          access the files on your tablet. To do this we store this device token
+          on your computer. All interaction with the reMarkable cloud will
+          happen from your computer. No one else will have access to this device
+          token.
+        </p>
+        <p>
+          To publish your site, we will upload the contents of a folder on your
+          device to <strong>marker.network</strong>. You'll be prompted before
+          we upload anything to be sure everything is in order.
+        </p>
+        <p>
+          If you have any questions about any of this, please reach out to me at
+          <strong>davidrusu.me@gmail.com</strong>
+        </p>
+        <p>
+          If you're curious what's going on under the hood, the source code for
+          this app is available at
+          <strong>https://github.com/davidrusu/marker.network</strong>
+        </p>
+      </div>
     </div>
-
     <script>
       require("./dist/register.js");
     </script>

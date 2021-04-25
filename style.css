@@ -1,8 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+html {
+  font-family: "VT323", monospace;
+}
+
 body {
   margin: 0px;
   height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.container {
+  display: flex;
+}
+
+.horizontal {
+  flex-direction: row;
+}
+
+.vertical {
+  flex-direction: column;
+}
+
+.instructions {
+  max-height: 80vh;
+  max-width: 50vw;
 }
 
 .spinner {
@@ -15,8 +37,16 @@ body {
   opacity: 0;
 }
 
+#one-time-code {
+  line-height: 32px;
+}
+
 .input-error {
-  border: 1px solid red;
+  border: 1px solid #a30;
+}
+
+.error-msg {
+  color: #a30;
 }
 
 .designer-container {
