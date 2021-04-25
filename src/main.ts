@@ -2,7 +2,6 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as log from "electron-log";
 import * as path from "path";
 import * as fs from "fs/promises";
-import * as sqlite3 from "better-sqlite3";
 import { execFile } from "child_process";
 import { Remarkable, ItemResponse } from "remarkable-typescript";
 import * as uuid from "uuid";
@@ -10,31 +9,16 @@ import { promisify } from "util";
 
 const APP_DATA = path.join(app.getPath("appData"), "marker.network");
 
+const MATERIAL_PATH = path.join(APP_DATA, "material");
+const DEVICE_TOKEN_PATH = path.join(APP_DATA, "device_token");
+const SITE_CONFIG_PATH = path.join(APP_DATA, "site_config.json");
+
 fs.mkdir(APP_DATA, { recursive: true }).then(
   () => log.info("APP_DATA", APP_DATA),
   (err) => log.error(`Failed to create APP_DATA: ${APP_DATA}`, err)
 );
 
-const db = new sqlite3(path.join(APP_DATA, "marker.db"), {
-  verbose: log.info,
-});
-
 let rM = new Remarkable();
-
-function setupDatabase() {
-  db.exec(`
-CREATE TABLE IF NOT EXISTS device_tokens (
-  id INTEGER PRIMARY KEY,
-  device_token TEXT NOT NULL
-)`);
-
-  db.exec(`
-CREATE TABLE IF NOT EXISTS websites (
-  root_id String,
-  device_token_id INTEGER,
-  FOREIGN KEY(device_token_id) REFERENCES device_tokens(id)
-)`);
-}
 
 function createRegisterWindow(): BrowserWindow {
   const window = new BrowserWindow({
@@ -75,12 +59,13 @@ function createDesignWebsiteWindow(): BrowserWindow {
   return window;
 }
 
-function materialPath(): string {
-  return path.join(APP_DATA, "material");
+async function loadDeviceToken(): Promise<string> {
+  let deviceToken = await fs.readFile(DEVICE_TOKEN_PATH, "utf-8");
+  return deviceToken;
 }
 
-function siteConfigPath(): string {
-  return path.join(APP_DATA, "site_config.json");
+async function saveDeviceToken(deviceToken: string): Promise<void> {
+  await fs.writeFile(DEVICE_TOKEN_PATH, deviceToken, "utf-8");
 }
 
 async function loadSiteConfig(): Promise<{
@@ -88,7 +73,7 @@ async function loadSiteConfig(): Promise<{
   title: string;
   theme: string;
 }> {
-  let siteConfigData = await fs.readFile(siteConfigPath(), "utf-8");
+  let siteConfigData = await fs.readFile(SITE_CONFIG_PATH, "utf-8");
   return JSON.parse(siteConfigData);
 }
 
@@ -97,19 +82,23 @@ async function saveSiteConfig(config: {
   title: string;
   theme: string;
 }): Promise<void> {
+  // We want to ensure we don't corrupt the site_config.json with a failed write.
+  //   1. first write to a tmp file
+  //   2. atomically rename the tmp file to SITE_CONFIG_PATH after tmp file is written successfully.
+
   let configString = JSON.stringify(config, null, 2);
-  let tempFile = `${siteConfigPath()}.tmp`;
+  let tempFile = `${SITE_CONFIG_PATH}.tmp`;
   await fs.writeFile(tempFile, configString, "utf-8");
-  await fs.rename(tempFile, siteConfigPath());
+  await fs.rename(tempFile, SITE_CONFIG_PATH);
 }
 
 async function siteGeneratorInit(siteName: string): Promise<number> {
-  log.info("Initializing site with site generator into", materialPath());
-  let deviceToken = loadDeviceToken();
+  log.info("Initializing site with site generator");
+  let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
     let proc = execFile(
       path.join(__dirname, "marker-network-site-generator"),
-      [siteConfigPath(), "init", deviceToken, siteName],
+      [SITE_CONFIG_PATH, "init", deviceToken, siteName],
       { cwd: __dirname }
     );
     proc.stderr.on("data", (data) => {
@@ -126,14 +115,14 @@ async function siteGeneratorInit(siteName: string): Promise<number> {
 }
 
 async function siteGeneratorFetch(): Promise<number> {
-  log.info("Fetching material with site generator into", materialPath());
-  let deviceToken = loadDeviceToken();
+  log.info("Fetching material with site generator into", MATERIAL_PATH);
+  let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
     let proc = execFile(path.join(__dirname, "marker-network-site-generator"), [
-      siteConfigPath(),
+      SITE_CONFIG_PATH,
       "fetch",
       deviceToken,
-      materialPath(),
+      MATERIAL_PATH,
     ]);
     proc.stderr.on("data", (data) => {
       log.info(`site-generator stderr: ${data}`);
@@ -148,8 +137,8 @@ async function siteGeneratorFetch(): Promise<number> {
   });
 }
 
-function registerDevice(): boolean {
-  let deviceToken = loadDeviceToken();
+async function registerDevice(): Promise<boolean> {
+  let deviceToken = await loadDeviceToken();
   if (deviceToken) {
     return false;
   } else {
@@ -173,7 +162,7 @@ async function setupSiteConfig(): Promise<boolean> {
   }
 }
 
-function designWebsite(): boolean {
+async function designWebsite(): Promise<boolean> {
   log.info("Designing the website");
   let win = createDesignWebsiteWindow();
   closeAllWindowsExcept(win);
@@ -181,10 +170,9 @@ function designWebsite(): boolean {
 }
 
 async function appFlow() {
-  setupDatabase();
-  if (registerDevice()) return;
+  if (await registerDevice()) return;
   if (await setupSiteConfig()) return;
-  if (designWebsite()) return;
+  if (await designWebsite()) return;
 }
 
 function closeAllWindowsExcept(win: BrowserWindow) {
@@ -198,12 +186,15 @@ app.on("ready", async () => {
   // setInterval seems to keep things running.
   // I have no clue what's happening here.
   setInterval(() => {}, 500);
+
   await appFlow();
 
-  app.on("activate", () => {
+  app.on("activate", async () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) appFlow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      await appFlow();
+    }
   });
 });
 
@@ -211,67 +202,17 @@ app.on("ready", async () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  log.info("Got window-all-closed event");
+  log.info("All windows closed");
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-function loadDeviceToken(): string {
-  let row = db.prepare("SELECT device_token FROM device_tokens").get();
-  if (row) {
-    return row.device_token;
-  } else {
-    return undefined;
-  }
-}
-
-function loadDeviceTokenId(deviceToken: string): Promise<number> {
-  let row = db
-    .prepare(
-      "SELECT id as device_token_id FROM device_tokens WHERE device_token = ?"
-    )
-    .get(deviceToken);
-  if (row) {
-    log.info("Got device token id", row.device_token_id);
-    return row.device_token_id;
-  } else {
-    return undefined;
-  }
-}
-
-function persistDeviceToken(deviceToken: string) {
-  db.prepare("INSERT INTO device_tokens(device_token) VALUES (?)").run(
-    deviceToken
-  );
-}
-
-function loadRootDirectory(): string {
-  let deviceTokenId = loadDeviceTokenId(loadDeviceToken());
-  let row = db
-    .prepare("SELECT root_id FROM websites WHERE device_token_id = ?")
-    .get(deviceTokenId);
-  if (row) {
-    log.info("Got root directory fromdb", row.root_id);
-    return row.root_id;
-  } else {
-    log.error("No root directory to get");
-    return undefined;
-  }
-}
-
-function persistWebsiteRoot(directoryId: string) {
-  let deviceTokenId = loadDeviceTokenId(loadDeviceToken());
-  db.prepare(
-    "INSERT INTO websites(device_token_id, root_id) VALUES (?, ?)"
-  ).run(deviceTokenId, directoryId);
-}
-
 ipcMain.handle("link-device", async (event, otc) => {
   try {
     const deviceToken = await rM.register({ code: otc });
-    log.info("Persisting device token", deviceToken);
-    persistDeviceToken(deviceToken);
+    log.info("Saving device token", deviceToken);
+    await saveDeviceToken(deviceToken);
     appFlow();
     return { success: true };
   } catch (error) {

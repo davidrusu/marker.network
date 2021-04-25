@@ -20,7 +20,6 @@
   "author": "David Rusu",
   "license": "GPL-3.0",
   "devDependencies": {
-    "@types/better-sqlite3": "^5.4.1",
     "@types/jquery": "^3.5.5",
     "@types/uuid": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
@@ -31,7 +30,6 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
-    "better-sqlite3": "^7.1.4",
     "electron-log": "^4.2.4",
     "jquery": "^3.6.0",
     "remarkable-typescript": "git://github.com/davidrusu/reMarkable-typescript.git#patch-1",
