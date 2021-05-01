@@ -92,7 +92,12 @@ async function saveSiteConfig(config: {
   await fs.rename(tempFile, SITE_CONFIG_PATH);
 }
 
-async function siteGeneratorInit(siteName: string): Promise<number> {
+async function siteGeneratorInit(
+  siteName: string
+): Promise<{
+  success: boolean;
+  msg: string;
+}> {
   log.info("Initializing site with site generator");
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
@@ -101,7 +106,9 @@ async function siteGeneratorInit(siteName: string): Promise<number> {
       [SITE_CONFIG_PATH, "init", deviceToken, siteName],
       { cwd: __dirname }
     );
+    let stdErr = "";
     proc.stderr.on("data", (data) => {
+      stdErr = data;
       log.info(`site-generator stderr: ${data}`);
     });
     proc.stdout.on("data", (data) => {
@@ -109,12 +116,15 @@ async function siteGeneratorInit(siteName: string): Promise<number> {
     });
     proc.on("exit", (exitCode) => {
       log.info(`site-generator exited with code ${exitCode}`);
-      resolve(exitCode);
+      resolve({ success: exitCode === 0, msg: stdErr });
     });
   });
 }
 
-async function siteGeneratorFetch(): Promise<number> {
+async function siteGeneratorFetch(): Promise<{
+  success: boolean;
+  msg: string;
+}> {
   log.info("Fetching material with site generator into", MATERIAL_PATH);
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
@@ -124,7 +134,9 @@ async function siteGeneratorFetch(): Promise<number> {
       deviceToken,
       MATERIAL_PATH,
     ]);
+    let stdErr = "";
     proc.stderr.on("data", (data) => {
+      stdErr = data;
       log.info(`site-generator stderr: ${data}`);
     });
     proc.stdout.on("data", (data) => {
@@ -132,7 +144,7 @@ async function siteGeneratorFetch(): Promise<number> {
     });
     proc.on("exit", (exitCode) => {
       log.info(`site-generator exited with code ${exitCode}`);
-      resolve(exitCode);
+      resolve({ success: exitCode === 0, msg: stdErr });
     });
   });
 }
@@ -233,19 +245,23 @@ ipcMain.handle("init-site", async (event, rMFolderName) => {
 
   try {
     log.info("Creating site folder on device", rMFolderName);
-    await siteGeneratorInit(rMFolderName);
+    let { success, msg } = await siteGeneratorInit(rMFolderName);
 
-    appFlow();
+    if (success) {
+      appFlow();
 
-    return {
-      success: true,
-      msg: "Directory was created on your device",
-    };
+      return {
+        success,
+        msg: "Site folder was initialized on your device",
+      };
+    } else {
+      return { success, msg };
+    }
   } catch (e) {
     log.error("Failed to create directory", e);
     return {
       success: false,
-      msg: `Failed to create directory, got error from reMarkable cloud API ${e}`,
+      msg: `Failed to initialize site, got error ${e}`,
     };
   }
 });

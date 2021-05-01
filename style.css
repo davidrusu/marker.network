@@ -44,15 +44,21 @@ body {
   opacity: 0;
 }
 
-#one-time-code {
+.instructions-input {
+  padding: 0px 6px;
+  max-width: 350px;
   width: 100%;
-  letter-spacing: 12px;
   font-size: 24px;
   font-family: "Open Sans";
   font-weight: 900;
-  text-align: center;
   border: none;
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+#one-time-code {
+  max-width: 100px;
+  width: 100%;
+  letter-spacing: 12px;
 }
 
 .input-error {

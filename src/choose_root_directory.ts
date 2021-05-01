@@ -3,9 +3,16 @@ import * as $ from "jquery";
 import { spinner } from "./nice_stuff";
 
 function createRootDirectory() {
-  const directory = $("#root-directory-input").val();
+  let directory = $("#root-directory-input").val() as string;
+  directory = directory.trim();
   console.log("Creating root directory", directory);
-  // TODO: validate directory name
+  if (directory.length === 0) {
+    $("#root-directory-input").addClass("input-error");
+    $("#root-directory-error-msg")
+      .text("Folder name can't be empty")
+      .removeClass("hidden");
+    return;
+  }
 
   ipcRenderer.invoke("init-site", directory).then((resp) => {
     $("#directory-spinner").empty();
@@ -25,5 +32,5 @@ function createRootDirectory() {
 }
 
 $(document).ready(() => {
-  $("#root-directory-input").on("change", createRootDirectory);
+  $("#create-folder-btn").click(createRootDirectory);
 });

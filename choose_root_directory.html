@@ -5,21 +5,38 @@
     <title>Choose Root Directory</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
-    <h1>Setting up your Website</h1>
-    <p>TODO: add a drawing explaining how marker.network works</p>
+  <body class="container horizontal">
+    <img class="instructions-graphic" src="assets/onboarding/1.svg" />
+    <div class="container vertical instructions-content">
+      <h1>Prepare your site folder.</h1>
+      <ol>
+        <li>Pick a name for a folder on your reMarkable tablet</li>
+        <li>
+          We'll create this folder on your tablet and place a small website
+          inside it to get you started
+        </li>
+        <li>
+          Next up, we'll generate a site based on the contents in this folder
+        </li>
+      </ol>
 
-    <p>
-      Make sure to choose a new folder name, one that's different from any of
-      the existing top-level folders on your device
-    </p>
-    <input
-      id="root-directory-input"
-      type="text"
-      placeholder="Site Folder Name"
-    />
-    <div id="root-directory-error-msg" class="error-msg hidden">
-      No errors... yet
+      <p>
+        Make sure to choose a new folder name, one that's different from any of
+        the existing top-level folders on your device
+      </p>
+      <div class="container horizontal">
+        <input
+          class="instructions-input"
+          id="root-directory-input"
+          type="text"
+          placeholder="Folder Name"
+        />
+        <button class="btn" id="create-folder-btn">Create</button>
+      </div>
+      <div id="directory-spinner" class="spinner"></div>
+      <pre id="root-directory-error-msg" class="error-msg hidden">
+        No errors... yet
+      </pre>
     </div>
 
     <script>
