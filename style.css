@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap");
 html {
   font-family: "VT323", monospace;
 }
@@ -6,8 +7,7 @@ html {
 body {
   margin: 0px;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
+  width: 100vw;
 }
 
 .container {
@@ -22,9 +22,16 @@ body {
   flex-direction: column;
 }
 
-.instructions {
-  max-height: 80vh;
-  max-width: 50vw;
+.instructions-graphic {
+  flex-grow: 1;
+  max-height: 100%;
+  max-width: 50%;
+}
+
+.instructions-content {
+  justify-content: center;
+  padding-right: 50px;
+  max-width: 50%;
 }
 
 .spinner {
@@ -38,7 +45,14 @@ body {
 }
 
 #one-time-code {
-  line-height: 32px;
+  width: 100%;
+  letter-spacing: 12px;
+  font-size: 24px;
+  font-family: "Open Sans";
+  font-weight: 900;
+  text-align: center;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .input-error {
@@ -58,4 +72,29 @@ body {
 .designer-preview {
   flex-grow: 1;
   margin: 24px 24px;
+}
+
+.btn {
+  margin: 5px;
+  white-space: nowrap;
+  text-decoration: none;
+  border: none;
+  color: white;
+  background-color: black;
+  box-shadow: 2.5px 2.5px 0px #999;
+  padding: 1px 3px;
+}
+
+.btn:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 1.5px 1.5px 0px #999;
+}
+
+.btn:active {
+  transform: translate(1.5px, 1.5px);
+  box-shadow: 1px 1px 0px #999;
+}
+
+li {
+  margin-bottom: 6px;
 }
