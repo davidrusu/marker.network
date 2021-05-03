@@ -5,11 +5,14 @@ import * as fs from "fs/promises";
 import { execFile } from "child_process";
 import { Remarkable, ItemResponse } from "remarkable-typescript";
 import * as uuid from "uuid";
+import { createServer } from "http-server";
+
 import { promisify } from "util";
 
 const APP_DATA = path.join(app.getPath("appData"), "marker.network");
 
 const MATERIAL_PATH = path.join(APP_DATA, "material");
+const BUILD_PATH = path.join(APP_DATA, "build");
 const DEVICE_TOKEN_PATH = path.join(APP_DATA, "device_token");
 const SITE_CONFIG_PATH = path.join(APP_DATA, "site_config.json");
 
@@ -128,12 +131,37 @@ async function siteGeneratorFetch(): Promise<{
   log.info("Fetching material with site generator into", MATERIAL_PATH);
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
-    let proc = execFile(path.join(__dirname, "marker-network-site-generator"), [
-      SITE_CONFIG_PATH,
-      "fetch",
-      deviceToken,
-      MATERIAL_PATH,
-    ]);
+    let proc = execFile(
+      path.join(__dirname, "marker-network-site-generator"),
+      [SITE_CONFIG_PATH, "fetch", deviceToken, MATERIAL_PATH],
+      { cwd: __dirname }
+    );
+    let stdErr = "";
+    proc.stderr.on("data", (data) => {
+      stdErr = data;
+      log.info(`site-generator stderr: ${data}`);
+    });
+    proc.stdout.on("data", (data) => {
+      log.info(`site-generator stdout: ${data}`);
+    });
+    proc.on("exit", (exitCode) => {
+      log.info(`site-generator exited with code ${exitCode}`);
+      resolve({ success: exitCode === 0, msg: stdErr });
+    });
+  });
+}
+
+async function siteGeneratorGen(): Promise<{
+  success: boolean;
+  msg: string;
+}> {
+  log.info("Generating site from", MATERIAL_PATH, "into", BUILD_PATH);
+  return new Promise((resolve) => {
+    let proc = execFile(
+      path.join(__dirname, "marker-network-site-generator"),
+      [SITE_CONFIG_PATH, "gen", MATERIAL_PATH, BUILD_PATH],
+      { cwd: __dirname }
+    );
     let stdErr = "";
     proc.stderr.on("data", (data) => {
       stdErr = data;
@@ -266,8 +294,22 @@ ipcMain.handle("init-site", async (event, rMFolderName) => {
   }
 });
 
+let server = createServer({ root: BUILD_PATH });
+server.listen(8080, "127.0.0.1");
+
 ipcMain.handle("load-preview", async () => {
   log.info("Loading preview");
-  let exitCode = await siteGeneratorFetch();
-  log.info(`Finished fetch exit=${exitCode}`);
+  let { success, msg } = await siteGeneratorFetch();
+  if (success) {
+    let { success, msg } = await siteGeneratorGen();
+    if (success) {
+      return { success, msg: "finished generating site" };
+    } else {
+      log.info("Failed to complete gen", msg);
+      return { success, msg };
+    }
+  } else {
+    log.info("Failed to complete fetch", msg);
+    return { success, msg };
+  }
 });
