@@ -73,11 +73,26 @@ body {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  background-color: #d2e8e2;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 255, 255, 0.5) 8px,
+    rgba(255, 255, 255, 0.5) 16px
+  );
 }
 
 .designer-preview {
-  flex-grow: 1;
-  margin: 24px 24px;
+  width: 70%;
+  height: 70%;
+  background-color: white;
+  margin: auto;
+  resize: both;
+  border: 1px solid black;
+  box-shadow: 4px 6px 20px rgba(0, 0, 0, 0.25);
+  user-select: none;
+  border-radius: 4px;
 }
 
 .btn {

@@ -5,15 +5,13 @@
     <title>Designer</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body class="container">
+  <body class="container designer-container">
     <div class="title">Designer</div>
-    <div class="designer-container">
-      <div class="designer-controls">
-        <button id="designer-reload">Reload</button>
-        <button id="designer-publish">Publish</button>
-      </div>
-      <iframe class="designer-preview" id="preview-frame" src=""></iframe>
+    <div class="designer-controls">
+      <button id="designer-reload">Reload</button>
+      <button id="designer-publish">Publish</button>
     </div>
+    <iframe class="designer-preview" id="preview-frame" src=""></iframe>
     <script>
       require("./dist/designer.js");
     </script>
