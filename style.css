@@ -56,7 +56,7 @@ body {
 }
 
 #one-time-code {
-  max-width: 100px;
+  min-width: 100px;
   width: 100%;
   letter-spacing: 12px;
 }

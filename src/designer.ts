@@ -18,6 +18,8 @@ function reloadDesigner() {
   });
 }
 
+reloadDesigner();
+
 $(document).ready(() => {
   $("#designer-reload").click(reloadDesigner);
   $("#designer-publish").click(publishDesigner);
