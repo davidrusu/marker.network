@@ -119,3 +119,21 @@ body {
 li {
   margin-bottom: 6px;
 }
+
+.designer-config {
+  max-width: 300px;
+}
+
+.designer-config > * {
+  margin: 6px;
+}
+
+#preview-loading {
+  position: fixed;
+  width: 100px;
+  height: 100px;
+  top: 50%;
+  left: 50%;
+  margin-top: -50px;
+  margin-left: -50px;
+}

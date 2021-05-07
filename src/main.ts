@@ -308,10 +308,11 @@ ipcMain.handle("load-preview", async () => {
     if (success) {
       let s = ((server as unknown) as { server: any }).server;
       let port = s.address().port;
+      let nonce = Math.floor(Date.now() / 1000);
       return {
         success,
         msg: "finished generating site",
-        url: `http://${URL}:${port}`,
+        url: `http://${URL}:${port}?${nonce}`,
       };
     } else {
       log.info("Failed to complete gen", msg);
@@ -321,4 +322,14 @@ ipcMain.handle("load-preview", async () => {
     log.info("Failed to complete fetch", msg);
     return { success, msg };
   }
+});
+
+ipcMain.handle("load-site-config", async () => {
+  log.info("Loading site config");
+  return loadSiteConfig();
+});
+
+ipcMain.handle("save-site-config", async (event, config) => {
+  log.info("Saving site config", config);
+  return saveSiteConfig(config);
 });
