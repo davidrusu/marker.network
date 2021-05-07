@@ -295,15 +295,23 @@ ipcMain.handle("init-site", async (event, rMFolderName) => {
 });
 
 let server = createServer({ root: BUILD_PATH });
-server.listen(8080, "127.0.0.1");
+let URL = "127.0.0.1";
+let PORT = 8080;
+server.listen(PORT, URL);
 
 ipcMain.handle("load-preview", async () => {
   log.info("Loading preview");
   let { success, msg } = await siteGeneratorFetch();
+
   if (success) {
     let { success, msg } = await siteGeneratorGen();
+
     if (success) {
-      return { success, msg: "finished generating site" };
+      return {
+        success,
+        msg: "finished generating site",
+        url: `http://${URL}:${PORT}`,
+      };
     } else {
       log.info("Failed to complete gen", msg);
       return { success, msg };
