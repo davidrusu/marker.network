@@ -2,24 +2,15 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as log from "electron-log";
 import * as path from "path";
 import * as fs from "fs/promises";
+import * as og_fs from "fs";
 import { execFile } from "child_process";
 import { Remarkable, ItemResponse } from "remarkable-typescript";
-import * as uuid from "uuid";
 import { createServer } from "http-server";
+import * as JSZip from "jszip";
+import * as FormData from "form-data";
 
-import { promisify } from "util";
-
-const APP_DATA = path.join(app.getPath("appData"), "marker.network");
-
-const MATERIAL_PATH = path.join(APP_DATA, "material");
-const BUILD_PATH = path.join(APP_DATA, "build");
-const DEVICE_TOKEN_PATH = path.join(APP_DATA, "device_token");
-const SITE_CONFIG_PATH = path.join(APP_DATA, "site_config.json");
-
-fs.mkdir(APP_DATA, { recursive: true }).then(
-  () => log.info("APP_DATA", APP_DATA),
-  (err) => log.error(`Failed to create APP_DATA: ${APP_DATA}`, err)
-);
+import * as auth from "./auth";
+import * as constants from "./constants";
 
 let rM = new Remarkable();
 
@@ -63,12 +54,12 @@ function createDesignWebsiteWindow(): BrowserWindow {
 }
 
 async function loadDeviceToken(): Promise<string> {
-  let deviceToken = await fs.readFile(DEVICE_TOKEN_PATH, "utf-8");
+  let deviceToken = await fs.readFile(constants.DEVICE_TOKEN_PATH, "utf-8");
   return deviceToken;
 }
 
 async function saveDeviceToken(deviceToken: string): Promise<void> {
-  await fs.writeFile(DEVICE_TOKEN_PATH, deviceToken, "utf-8");
+  await fs.writeFile(constants.DEVICE_TOKEN_PATH, deviceToken, "utf-8");
 }
 
 async function loadSiteConfig(): Promise<{
@@ -76,7 +67,7 @@ async function loadSiteConfig(): Promise<{
   title: string;
   theme: string;
 }> {
-  let siteConfigData = await fs.readFile(SITE_CONFIG_PATH, "utf-8");
+  let siteConfigData = await fs.readFile(constants.SITE_CONFIG_PATH, "utf-8");
   return JSON.parse(siteConfigData);
 }
 
@@ -87,12 +78,12 @@ async function saveSiteConfig(config: {
 }): Promise<void> {
   // We want to ensure we don't corrupt the site_config.json with a failed write.
   //   1. first write to a tmp file
-  //   2. atomically rename the tmp file to SITE_CONFIG_PATH after tmp file is written successfully.
+  //   2. atomically rename the tmp file to constants.SITE_CONFIG_PATH after tmp file is written successfully.
 
   let configString = JSON.stringify(config, null, 2);
-  let tempFile = `${SITE_CONFIG_PATH}.tmp`;
+  let tempFile = `${constants.SITE_CONFIG_PATH}.tmp`;
   await fs.writeFile(tempFile, configString, "utf-8");
-  await fs.rename(tempFile, SITE_CONFIG_PATH);
+  await fs.rename(tempFile, constants.SITE_CONFIG_PATH);
 }
 
 async function siteGeneratorInit(
@@ -106,7 +97,7 @@ async function siteGeneratorInit(
   return new Promise((resolve) => {
     let proc = execFile(
       path.join(__dirname, "marker-network-site-generator"),
-      [SITE_CONFIG_PATH, "init", deviceToken, siteName],
+      [constants.SITE_CONFIG_PATH, "init", deviceToken, siteName],
       { cwd: __dirname }
     );
     let stdErr = "";
@@ -128,12 +119,20 @@ async function siteGeneratorFetch(): Promise<{
   success: boolean;
   msg: string;
 }> {
-  log.info("Fetching material with site generator into", MATERIAL_PATH);
+  log.info(
+    "Fetching material with site generator into",
+    constants.MATERIAL_PATH
+  );
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
     let proc = execFile(
       path.join(__dirname, "marker-network-site-generator"),
-      [SITE_CONFIG_PATH, "fetch", deviceToken, MATERIAL_PATH],
+      [
+        constants.SITE_CONFIG_PATH,
+        "fetch",
+        deviceToken,
+        constants.MATERIAL_PATH,
+      ],
       { cwd: __dirname }
     );
     let stdErr = "";
@@ -155,11 +154,21 @@ async function siteGeneratorGen(): Promise<{
   success: boolean;
   msg: string;
 }> {
-  log.info("Generating site from", MATERIAL_PATH, "into", BUILD_PATH);
+  log.info(
+    "Generating site from",
+    constants.MATERIAL_PATH,
+    "into",
+    constants.BUILD_PATH
+  );
   return new Promise((resolve) => {
     let proc = execFile(
       path.join(__dirname, "marker-network-site-generator"),
-      [SITE_CONFIG_PATH, "gen", MATERIAL_PATH, BUILD_PATH],
+      [
+        constants.SITE_CONFIG_PATH,
+        "gen",
+        constants.MATERIAL_PATH,
+        constants.BUILD_PATH,
+      ],
       { cwd: __dirname }
     );
     let stdErr = "";
@@ -294,7 +303,7 @@ ipcMain.handle("init-site", async (event, rMFolderName) => {
   }
 });
 
-let server = createServer({ root: BUILD_PATH });
+let server = createServer({ root: constants.BUILD_PATH });
 let URL = "127.0.0.1";
 server.listen(0, URL);
 
@@ -332,4 +341,56 @@ ipcMain.handle("load-site-config", async () => {
 ipcMain.handle("save-site-config", async (event, config) => {
   log.info("Saving site config", config);
   return saveSiteConfig(config);
+});
+
+ipcMain.handle("publish", async (event) => {
+  log.info("Publishing site");
+
+  let user = await auth.login();
+  let zip = JSZip();
+
+  let config = await loadSiteConfig();
+  zip.file("config.json", JSON.stringify(config));
+
+  let manifest = await fs.readFile(
+    path.join(constants.MATERIAL_PATH, "manifest.json"),
+    "utf-8"
+  );
+  zip.file("manifest.json", manifest);
+
+  let zips = await fs.readdir(path.join(constants.MATERIAL_PATH, "zip"));
+  for (const notebook_zip of zips) {
+    log.info("zipping", notebook_zip);
+    let zipData = await fs.readFile(
+      path.join(constants.MATERIAL_PATH, "zip", notebook_zip)
+    );
+    zip.file(`zip/${notebook_zip}`, zipData);
+  }
+
+  log.info("finished building zip, starting upload");
+  let marker_network_zip = path.join(constants.APP_DATA, "marker_network.zip");
+
+  return new Promise((resolve) => {
+    zip
+      .generateNodeStream({ streamFiles: true })
+      .pipe(og_fs.createWriteStream(marker_network_zip))
+      .on("finish", async () => {
+        console.log(`${marker_network_zip} written.`);
+
+        var form = new FormData();
+        form.append("file", og_fs.createReadStream(marker_network_zip));
+        form.submit(
+          {
+            protocol: "https:",
+            host: "marker.network",
+            path: "/upload/david",
+            headers: { Authorization: `Bearer ${user.id_token}` },
+          },
+          function (err, res) {
+            log.info("upload result", err, res.statusCode);
+            resolve(res.statusCode);
+          }
+        );
+      });
+  });
 });

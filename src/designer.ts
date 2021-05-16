@@ -5,6 +5,9 @@ import { spinner } from "./nice_stuff";
 
 function publishDesigner() {
   console.log("publishing");
+  ipcRenderer.invoke("publish").then((publish_resp) => {
+    console.log("Publish Response", publish_resp);
+  });
 }
 
 function reloadDesigner() {

@@ -1,5 +1,5 @@
 {
-  "name": "marker-network",
+  "name": "marker.network",
   "version": "1.0.0",
   "description": "A static site generator for the reMarkable Tablet",
   "scripts": {
@@ -20,21 +20,23 @@
   "author": "David Rusu",
   "license": "GPL-3.0",
   "devDependencies": {
-    "@types/jquery": "^3.5.5",
-    "@types/uuid": "^8.0.0",
+    "@types/auth0": "^2.33.3",
     "@types/http-server": "0.10.1",
+    "@types/jquery": "^3.5.5",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
     "electron": "12.0.1",
     "electron-rebuild": "^2.3.5",
     "eslint": "^7.3.1",
-    "typescript": "^3.9.5"
+    "typescript": "^4.2"
   },
   "dependencies": {
+    "auth0": "^2.34.2",
     "electron-log": "^4.2.4",
+    "form-data": "^4.0.0",
+    "http-server": "0.12.3",
     "jquery": "^3.6.0",
-    "remarkable-typescript": "git://github.com/davidrusu/reMarkable-typescript.git#patch-1",
-    "uuid": "^8.2.0",
-    "http-server": "0.12.3"
+    "jszip": "^3.2.0",
+    "remarkable-typescript": "git://github.com/davidrusu/reMarkable-typescript.git#patch-1"
   }
 }
