@@ -5,8 +5,10 @@ import { spinner } from "./nice_stuff";
 
 function publishDesigner() {
   console.log("publishing");
+  $("#preview-loading").append(spinner);
   ipcRenderer.invoke("publish").then((publish_resp) => {
     console.log("Publish Response", publish_resp);
+    $("#preview-loading").empty();
   });
 }
 
