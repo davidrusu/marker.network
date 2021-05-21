@@ -76,7 +76,6 @@ export async function login(): Promise<{
               logout();
               reject(err);
             } else {
-              log.info("Refreshed token", refreshedUserData);
               // refreshedUserData does not have a refresh_token, merge it into userData
               saveUserData(Object.assign(userData, refreshedUserData));
               resolve(userData as { refresh_token: string; id_token: string });

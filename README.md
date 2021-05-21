@@ -10,3 +10,9 @@ rustup target install x86_64-unknown-linux-musl
 npm install
 npm run build
 ```
+
+### Updating submodules
+
+```
+git submodule update --remote
+```

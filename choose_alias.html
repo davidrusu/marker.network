@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Choose Root Directory</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container vertical choose-alias-container">
+      <h1>Let's choose your alias</h1>
+      <p>
+        Before we can publish your site, we'll need to reserve your online
+        alias.
+      </p>
+      <div class="container horizontal choose-alias">
+        marker.network/@
+        <input
+          id="alias-input"
+          type="text"
+          placeholder="your-enigmatic-alias"
+        />
+      </div>
+      <br />
+      <button class="btn" id="create-folder-btn">Let's do this!</button>
+      <div id="spinner" class="spinner"></div>
+      <div id="alias-error-msg" class="error-msg hidden">No errors... yet</div>
+    </div>
+
+    <script>
+      require("./dist/choose_alias.js");
+    </script>
+  </body>
+</html>

@@ -9,14 +9,22 @@
     <div class="title">Designer</div>
     <div class="container vertical designer-config">
       <div class="container horizontal">
-        <button id="designer-reload">Reload</button>
-        <button id="designer-publish">Publish</button>
+        <button id="designer-reload" class="btn">Reload</button>
+        <button id="designer-publish" class="btn">Publish</button>
+        <a
+          class="btn light-bg"
+          id="marker-network-site-link"
+          href=""
+          target="_blank"
+        ></a>
       </div>
-      <div class="container vertical">
-        <div class="container horizontal">
-          <div>Title</div>
-          <input id="site-title-input" placeholder="Site Title" />
-        </div>
+      <div class="container horizontal designer-config">
+        <div class="config-label">Title:</div>
+        <input
+          class="config-input"
+          id="site-title-input"
+          placeholder="Site Title"
+        />
       </div>
     </div>
     <iframe class="designer-preview" id="preview-frame" src=""></iframe>

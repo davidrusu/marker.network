@@ -99,6 +99,8 @@ body {
   margin: 5px;
   white-space: nowrap;
   text-decoration: none;
+  font: inherit;
+  font-size: 18px;
   border: none;
   color: white;
   background-color: black;
@@ -116,6 +118,78 @@ body {
   box-shadow: 1px 1px 0px #999;
 }
 
+.light-bg {
+    background-color: #fff;
+    color: #000;
+}
+
+.light-bg:hover {
+    background-color: #fff;
+    color: #222;
+}
+
+.live-btn {
+    animation: glowing 3000ms 1;
+}
+
+@keyframes glowing {
+  0% {
+      background-color: #fff;
+      color: #000;
+      box-shadow: 2.5px 2.5px 0px #999;
+  }
+  10% {
+      color: #fff;
+      background-color: #e32;
+    box-shadow: 0 0 3px #e32;
+  }
+  20% {
+      color: #fff;
+    background-color: #f22;
+    box-shadow: 0 0 10px #f22;
+  }
+  30% {
+      color: #fff;
+    background-color: #e32;
+    box-shadow: 0 0 3px #e32;
+  }
+  40% {
+      color: #fff;
+    background-color: #f22;
+    box-shadow: 0 0 10px #f22;
+  }
+  50% {
+      color: #fff;
+    background-color: #e32;
+    box-shadow: 0 0 3px #e32;
+  }
+  60% {
+      color: #fff;
+    background-color: #f22;
+    box-shadow: 0 0 10px #f22;
+  }
+  70% {
+      color: #fff;
+    background-color: #e32;
+    box-shadow: 0 0 3px #e32;
+  }
+  80% {
+      color: #fff;
+    background-color: #f22;
+    box-shadow: 0 0 10px #f22;
+  }
+  90% {
+      color: #fff;
+    background-color: #e32;
+    box-shadow: 0 0 3px #e32;
+  }
+  100% {
+      background-color: #fff;
+      color: #000;
+      box-shadow: 2.5px 2.5px 0px #999;
+  }
+}
+
 li {
   margin-bottom: 6px;
 }
@@ -128,6 +202,21 @@ li {
   margin: 6px;
 }
 
+.config-input {
+  padding: 0px 6px;
+  width: 100%;
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 900;
+  border: none;
+  border-bottom: 1px solid black;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.config-label {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
 #preview-loading {
   position: fixed;
   width: 100px;
@@ -136,4 +225,21 @@ li {
   left: 50%;
   margin-top: -50px;
   margin-left: -50px;
+}
+
+.choose-alias {
+    font-size: 24px;
+}
+
+.choose-alias > input {
+  padding: 0px 6px;
+  width: 100%;
+  font-size: 24px;
+  font-family: inherit;
+  font-weight: 900;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.choose-alias-container {
+    padding: 20px 50px;
 }

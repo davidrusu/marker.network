@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { shell, app, BrowserWindow, ipcMain } from "electron";
 import * as log from "electron-log";
 import * as path from "path";
 import * as fs from "fs/promises";
@@ -8,6 +8,7 @@ import { Remarkable, ItemResponse } from "remarkable-typescript";
 import { createServer } from "http-server";
 import * as JSZip from "jszip";
 import * as FormData from "form-data";
+import axios from "axios";
 
 import * as auth from "./auth";
 import * as constants from "./constants";
@@ -50,7 +51,51 @@ function createDesignWebsiteWindow(): BrowserWindow {
     },
   });
   window.loadFile(path.join(__dirname, "../designer.html"));
+  window.webContents.on("new-window", function (e, url) {
+    // Open marker.network links in the users browser of choice
+    if (url.indexOf("marker.network") > -1) {
+      e.preventDefault();
+      shell.openExternal(url);
+    }
+  });
   return window;
+}
+
+function createAliasWindow(user: { id_token: string }): Promise<string> {
+  return new Promise((resolve) => {
+    const window = new BrowserWindow({
+      height: 340,
+      width: 460,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    });
+    window.loadFile(path.join(__dirname, "../choose_alias.html"));
+    log.info("Creating save site alias channel");
+    ipcMain.handle("save-site-alias", async (event, alias) => {
+      try {
+        let resp = await reserveSiteAlias(user, alias);
+        if (resp.success) {
+          await saveAlias(alias);
+          resolve(alias);
+          window.destroy();
+        } else {
+          return resp;
+        }
+      } catch (e) {
+        return {
+          success: false,
+          msg:
+            "Something went wrong, please try again. If the problem persists, send me an email at davidrusu.me@gmail.com and we can track down the problem",
+        };
+      }
+    });
+    window.on("closed", () => {
+      log.info("alias window closed");
+      ipcMain.removeHandler("save-site-alias");
+    });
+  });
 }
 
 async function loadDeviceToken(): Promise<string> {
@@ -96,7 +141,7 @@ async function siteGeneratorInit(
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
     let proc = execFile(
-      path.join(__dirname, "marker-network-site-generator"),
+      path.join(__dirname, "marker_network_site_generator"),
       [constants.SITE_CONFIG_PATH, "init", deviceToken, siteName],
       { cwd: __dirname }
     );
@@ -126,7 +171,7 @@ async function siteGeneratorFetch(): Promise<{
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
     let proc = execFile(
-      path.join(__dirname, "marker-network-site-generator"),
+      path.join(__dirname, "marker_network_site_generator"),
       [
         constants.SITE_CONFIG_PATH,
         "fetch",
@@ -162,7 +207,7 @@ async function siteGeneratorGen(): Promise<{
   );
   return new Promise((resolve) => {
     let proc = execFile(
-      path.join(__dirname, "marker-network-site-generator"),
+      path.join(__dirname, "marker_network_site_generator"),
       [
         constants.SITE_CONFIG_PATH,
         "gen",
@@ -213,10 +258,11 @@ async function setupSiteConfig(): Promise<boolean> {
   }
 }
 
+let designerWin: BrowserWindow = null;
 async function designWebsite(): Promise<boolean> {
   log.info("Designing the website");
-  let win = createDesignWebsiteWindow();
-  closeAllWindowsExcept(win);
+  designerWin = createDesignWebsiteWindow();
+  closeAllWindowsExcept(designerWin);
   return true;
 }
 
@@ -230,6 +276,44 @@ function closeAllWindowsExcept(win: BrowserWindow) {
   BrowserWindow.getAllWindows()
     .filter((w) => w !== win)
     .forEach((window) => window.close());
+}
+
+async function saveAlias(alias: string): Promise<void> {
+  await fs.writeFile(constants.MARKER_NETWORK_ALIAS, alias, "utf-8");
+}
+
+async function loadAlias(): Promise<string> {
+  return await fs.readFile(constants.MARKER_NETWORK_ALIAS, "utf-8");
+}
+
+async function siteAlias(user: { id_token: string }): Promise<string> {
+  try {
+    return await loadAlias();
+  } catch (e) {
+    return await createAliasWindow(user);
+  }
+}
+
+async function reserveSiteAlias(
+  user: { id_token: string },
+  alias: string
+): Promise<{ success: boolean; msg: string }> {
+  log.info("Reserveing site alias", alias);
+  let resp = await axios({
+    url: `/reserve/${alias}`,
+    method: "post",
+    headers: { Authorization: `Bearer ${user.id_token}` },
+    baseURL: "https://marker.network",
+    // baseURL: "http://0.0.0.0:3030",
+  });
+
+  if (resp.status == 201) {
+    log.info("Received successful reserve response from marker.network");
+    return { success: true, msg: "Alias has been reserved" };
+  } else {
+    log.info("Received failed reserve response from marker.network", resp);
+    return { success: false, msg: resp.data };
+  }
 }
 
 app.on("ready", async () => {
@@ -318,6 +402,10 @@ ipcMain.handle("load-preview", async () => {
       let s = ((server as unknown) as { server: any }).server;
       let port = s.address().port;
       let nonce = Math.floor(Date.now() / 1000);
+      if (designerWin && !designerWin.isDestroyed()) {
+        // sometimes aggressive browser caching prevents the iframe from reloading
+        await designerWin.webContents.session.clearCache();
+      }
       return {
         success,
         msg: "finished generating site",
@@ -335,18 +423,32 @@ ipcMain.handle("load-preview", async () => {
 
 ipcMain.handle("load-site-config", async () => {
   log.info("Loading site config");
-  return loadSiteConfig();
+  let config: any = await loadSiteConfig();
+  try {
+    let alias = await loadAlias();
+    config.alias = alias;
+  } catch (e) {
+    config.alias = null;
+  }
+  return config;
 });
 
 ipcMain.handle("save-site-config", async (event, config) => {
   log.info("Saving site config", config);
-  return saveSiteConfig(config);
+  let validatedConfig = {
+    title: config.title,
+    theme: config.theme,
+    site_root: config.site_root,
+  };
+  return saveSiteConfig(validatedConfig);
 });
 
 ipcMain.handle("publish", async (event) => {
   log.info("Publishing site");
 
   let user = await auth.login();
+  let alias = await siteAlias(user);
+  log.info("Publishing to alias", alias);
   let zip = JSZip();
 
   let config = await loadSiteConfig();
@@ -383,7 +485,7 @@ ipcMain.handle("publish", async (event) => {
           {
             protocol: "https:",
             host: "marker.network",
-            path: "/upload/david",
+            path: `/upload/${alias}`,
             headers: { Authorization: `Bearer ${user.id_token}` },
           },
           function (err, res) {
