@@ -23,15 +23,19 @@ body {
 }
 
 .instructions-graphic {
-  flex-grow: 1;
-  max-height: 100%;
-  max-width: 50%;
+  max-height: 100vh;
+  max-width: 40vw;
+  margin: 0px auto;
 }
 
 .instructions-content {
   justify-content: center;
   padding-right: 50px;
   max-width: 50%;
+}
+
+.center {
+  justify-content: center;
 }
 
 .spinner {
@@ -47,7 +51,6 @@ body {
 .instructions-input {
   padding: 0px 6px;
   max-width: 350px;
-  width: 100%;
   font-size: 24px;
   font-family: "Open Sans";
   font-weight: 900;
@@ -242,4 +245,8 @@ li {
 }
 .choose-alias-container {
     padding: 20px 50px;
+}
+
+#start-registering {
+    margin: 0 auto;
 }

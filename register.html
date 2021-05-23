@@ -5,8 +5,9 @@
     <title>Register your device.</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body class="container horizontal">
-    <img class="instructions-graphic" src="assets/onboarding/0.svg" />
+  <body class="container vertical center">
+    <div class="container horizontal">
+    <img id="plan-svg" class="instructions-graphic" src="assets/register.svg" />
     <div class="container vertical instructions-content">
       <h1>Link Your Device</h1>
       <p>
@@ -44,17 +45,16 @@
 
       <small>
         <p>
-          <u><strong>A NOTE ON PRIVACY:</strong></u> This software is actively
-          designed to keep your notes safe and secure. Only material directly
-          related to your site is uploaded to <em>marker.network</em>. Nothing
-          else.
+          <u><strong>A NOTE ON PRIVACY:</strong></u> This software is designed
+	  to keep your notes safe and secure. Only material directly related
+	  to your site is uploaded to <em>marker.network</em>. Nothing else.
         </p>
         <p>
           The device token generated from this one-time-code is stored on your
           computer and only used to authenticate with reMarkable AC.
         </p>
         <p>
-          If you have any questions, please reach out to me at
+          If you have any questions, reach out to me at
           <u>davidrusu.me@gmail.com</u>
         </p>
 
@@ -64,6 +64,8 @@
         </p>
       </small>
     </div>
+    </div>
+    <button class="btn" id="start-registering">Let's Do It!</button>
     <script>
       require("./dist/register.js");
     </script>

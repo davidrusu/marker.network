@@ -24,6 +24,11 @@ function attemptToRegister() {
 }
 
 $(document).ready(() => {
-  $("#one-time-code");
+  $(".instructions-content").hide();
+  $("#start-registering").click(() => {
+    $("#plan-svg").attr("src", "assets/register-step1.svg");
+    $("#start-registering").hide();
+    $(".instructions-content").show();
+  })
   $("#register-btn").click(attemptToRegister);
 });
