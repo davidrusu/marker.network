@@ -1,0 +1,20 @@
+<head>
+  <title>Subscribe To Marker.Network</title>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <script>
+    let publishableKey =
+      "pk_live_51HLuKOAgbi7rvebVecIoQDIREW7WPmGyEcK4nFIZZbLnUm6HO6I9lFYfv0aFek1NVU10zbp8R3daf8xN67WNvWyb007xLrZ3NH";
+
+    var stripe = Stripe(publishableKey);
+
+    var urlParams = new URLSearchParams(window.location.search);
+    console.log(urlParams.get("checkoutSessionId"));
+    stripe
+      .redirectToCheckout({
+        sessionId: urlParams.get("checkoutSessionId"),
+      })
+      .then(console.log);
+  </script>
+</body>

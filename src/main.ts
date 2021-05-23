@@ -12,6 +12,7 @@ import axios from "axios";
 
 import * as auth from "./auth";
 import * as constants from "./constants";
+import * as markerNetworkSub from "./sub";
 
 let rM = new Remarkable();
 
@@ -316,6 +317,25 @@ async function reserveSiteAlias(
   }
 }
 
+async function verifySubscription(user: string): Promise<boolean> {
+  if (!(await og_fs.existsSync(constants.MARKER_NETWORK_SUB))) {
+    let checkoutSession = await markerNetworkSub.createCheckoutSession(user);
+    if (checkoutSession) {
+      let subbed = await markerNetworkSub.createCheckoutWindow(checkoutSession);
+      if (subbed) {
+        await fs.writeFile(constants.MARKER_NETWORK_SUB, "xxx", "utf-8");
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  } else {
+    return true;
+  }
+}
+
 app.on("ready", async () => {
   // HACK! for some reason async ipc stalls and this
   // setInterval seems to keep things running.
@@ -447,6 +467,12 @@ ipcMain.handle("publish", async (event) => {
   log.info("Publishing site");
 
   let user = await auth.login();
+  let subbed = await verifySubscription(user.id_token);
+
+  if (!subbed) {
+    return 0;
+  }
+
   let alias = await siteAlias(user);
   log.info("Publishing to alias", alias);
   let zip = JSZip();
@@ -458,6 +484,7 @@ ipcMain.handle("publish", async (event) => {
     path.join(constants.MATERIAL_PATH, "manifest.json"),
     "utf-8"
   );
+
   zip.file("manifest.json", manifest);
 
   let zips = await fs.readdir(path.join(constants.MATERIAL_PATH, "zip"));

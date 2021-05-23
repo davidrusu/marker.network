@@ -10,7 +10,9 @@ function publishDesigner() {
     await loadConfig();
     console.log("Publish Response", publish_resp);
     $("#preview-loading").empty();
-    $("#marker-network-site-link").addClass("live-btn");
+    if (publish_resp >= 200 && publish_resp < 400) {
+      $("#marker-network-site-link").addClass("live-btn");
+    }
     setTimeout(
       () => $("#marker-network-site-link").removeClass("live-btn"),
       5000
