@@ -76,13 +76,13 @@ body {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  background-color: #d2e8e2;
+  background-color: rgba(248,246, 229);
   background-image: repeating-linear-gradient(
     -45deg,
     transparent,
-    transparent 8px,
-    rgba(255, 255, 255, 0.5) 8px,
-    rgba(255, 255, 255, 0.5) 16px
+    transparent 5px,
+    rgba(255, 255, 255, 0.25) 5px,
+    rgba(255, 255, 255, 0.25) 10px
   );
 }
 
@@ -95,9 +95,10 @@ body {
   margin: auto;
   resize: both;
   border: 1px solid black;
-  box-shadow: 4px 6px 20px rgba(0, 0, 0, 0.25);
+  /* box-shadow: 4px 6px 20px rgba(0, 0, 0, 0.25); */
+  box-shadow: 4px 6px 0px rgba(0,0,0,0.2);
   user-select: none;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .btn {
@@ -109,27 +110,28 @@ body {
   border: none;
   color: white;
   background-color: black;
-  box-shadow: 2.5px 2.5px 0px #999;
+  box-shadow: 2.5px 2.5px 0px rgba(0,0,0,0.5);
   padding: 1px 3px;
+  border-radius: 2px;
 }
 
 .btn:hover {
   transform: translate(1px, 1px);
-  box-shadow: 1.5px 1.5px 0px #999;
+  box-shadow: 1.5px 1.5px 0px rgba(0,0,0,0.5);
 }
 
 .btn:active {
   transform: translate(1.5px, 1.5px);
-  box-shadow: 1px 1px 0px #999;
+  box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
 }
 
 .light-bg {
-  background-color: #fff;
+  background-color: white;
   color: #000;
+  border: 0.1px solid black;
 }
 
 .light-bg:hover {
-  background-color: #fff;
   color: #222;
 }
 
@@ -219,7 +221,9 @@ li {
 }
 
 .config-label {
-  background-color: rgba(255, 255, 255, 0.8);
+    background-color: black;
+    color: white;
+    padding: 0px 2px;
 }
 
 #preview-loading {
