@@ -3,7 +3,7 @@ import * as log from "electron-log";
 import * as path from "path";
 import * as fs from "fs/promises";
 import * as og_fs from "fs";
-import { execFile } from "child_process";
+import { execFile, ChildProcess } from "child_process";
 import { Remarkable, ItemResponse } from "remarkable-typescript";
 import { createServer } from "http-server";
 import * as JSZip from "jszip";
@@ -13,6 +13,8 @@ import axios from "axios";
 import * as auth from "./auth";
 import * as constants from "./constants";
 import * as markerNetworkSub from "./sub";
+
+app.setAppLogsPath(); // Sets the default logging directory
 
 let rM = new Remarkable();
 
@@ -26,6 +28,13 @@ function createRegisterWindow(): BrowserWindow {
     },
   });
   window.loadFile(path.join(__dirname, "../register.html"));
+  window.webContents.on("new-window", function (e, url) {
+    // Open my.remarkable.com links in the users browser of choice
+    if (url.indexOf("remarkable.com") > -1) {
+      e.preventDefault();
+      shell.openExternal(url);
+    }
+  });
   return window;
 }
 
@@ -131,20 +140,37 @@ async function saveSiteConfig(config: {
   await fs.rename(tempFile, constants.SITE_CONFIG_PATH);
 }
 
-async function siteGeneratorInit(
-  siteName: string
-): Promise<{
+function fixAsarUnpackedPath(path: string): string {
+  return path.replace("app.asar", "app.asar.unpacked");
+}
+
+function siteGeneratorPath(): string {
+  let generatorPath = fixAsarUnpackedPath(
+    path.join(__dirname, "marker_network_site_generator")
+  );
+  log.info("Site Generator Path: ", generatorPath);
+  return generatorPath;
+}
+
+function generatorProc(args: string[]): ChildProcess {
+  return execFile(siteGeneratorPath(), args, {
+    cwd: fixAsarUnpackedPath(__dirname),
+  });
+}
+
+async function siteGeneratorInit(siteName: string): Promise<{
   success: boolean;
   msg: string;
 }> {
   log.info("Initializing site with site generator");
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
-    let proc = execFile(
-      path.join(__dirname, "marker_network_site_generator"),
-      [constants.SITE_CONFIG_PATH, "init", deviceToken, siteName],
-      { cwd: __dirname }
-    );
+    let proc = generatorProc([
+      constants.SITE_CONFIG_PATH,
+      "init",
+      deviceToken,
+      siteName,
+    ]);
     let stdErr = "";
     proc.stderr.on("data", (data) => {
       stdErr = data;
@@ -170,16 +196,12 @@ async function siteGeneratorFetch(): Promise<{
   );
   let deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
-    let proc = execFile(
-      path.join(__dirname, "marker_network_site_generator"),
-      [
-        constants.SITE_CONFIG_PATH,
-        "fetch",
-        deviceToken,
-        constants.MATERIAL_PATH,
-      ],
-      { cwd: __dirname }
-    );
+    let proc = generatorProc([
+      constants.SITE_CONFIG_PATH,
+      "fetch",
+      deviceToken,
+      constants.MATERIAL_PATH,
+    ]);
     let stdErr = "";
     proc.stderr.on("data", (data) => {
       stdErr = data;
@@ -206,16 +228,12 @@ async function siteGeneratorGen(): Promise<{
     constants.BUILD_PATH
   );
   return new Promise((resolve) => {
-    let proc = execFile(
-      path.join(__dirname, "marker_network_site_generator"),
-      [
-        constants.SITE_CONFIG_PATH,
-        "gen",
-        constants.MATERIAL_PATH,
-        constants.BUILD_PATH,
-      ],
-      { cwd: __dirname }
-    );
+    let proc = generatorProc([
+      constants.SITE_CONFIG_PATH,
+      "gen",
+      constants.MATERIAL_PATH,
+      constants.BUILD_PATH,
+    ]);
     let stdErr = "";
     proc.stderr.on("data", (data) => {
       stdErr = data;
