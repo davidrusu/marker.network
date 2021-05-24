@@ -87,6 +87,8 @@ body {
 }
 
 .designer-preview {
+  min-width: 200px;
+  min-height: 200px;
   width: 70%;
   height: 70%;
   background-color: white;

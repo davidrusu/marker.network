@@ -7,63 +7,67 @@
   </head>
   <body class="container vertical center">
     <div class="container horizontal">
-    <img id="plan-svg" class="instructions-graphic" src="assets/register.svg" />
-    <div class="container vertical instructions-content">
-      <h1>Link Your Device</h1>
-      <p>
-        We need to link this app with your reMarkable tablet through the
-        reMarkable's cloud.
-      </p>
-      <ol>
-        <li>
-          Login to your reMarkable Cloud account
-          <a target="_blank" href="https://my.remarkable.com">
-            https://my.remarkable.com
-          </a>
-        </li>
-        <li>
-          Then generate a new one-time-code (OTC) by visiting
-          <a target="_blank" href="https://my.remarkable.com/connect/desktop">
-            https://my.remarkable.com/connect/desktop
-          </a>
-        </li>
-        <li>Copy the OTC into the box below and hit register</li>
-      </ol>
-      <div class="container horizontal">
-        <input
-          class="instructions-input"
-          id="one-time-code"
-          type="text"
-          placeholder="XXXXXXXX"
-        />
-        <button class="btn" id="register-btn">Register</button>
+      <img
+        id="plan-svg"
+        class="instructions-graphic"
+        src="assets/register.svg"
+      />
+      <div class="container vertical instructions-content">
+        <h1>Link Your Device</h1>
+        <p>
+          We need to link this app with your reMarkable tablet through the
+          reMarkable's cloud.
+        </p>
+        <ol>
+          <li>
+            Login to your reMarkable Cloud account
+            <a target="_blank" href="https://my.remarkable.com">
+              https://my.remarkable.com
+            </a>
+          </li>
+          <li>
+            Then generate a new one-time-code (OTC) by visiting
+            <a target="_blank" href="https://my.remarkable.com/connect/desktop">
+              https://my.remarkable.com/connect/desktop
+            </a>
+          </li>
+          <li>Copy the OTC into the box below and hit register</li>
+        </ol>
+        <div class="container horizontal">
+          <input
+            class="instructions-input"
+            id="one-time-code"
+            type="text"
+            placeholder="XXXXXXXX"
+          />
+          <button class="btn" id="register-btn">Register</button>
+        </div>
+        <div id="register-spinner" class="spinner"></div>
+        <div id="register-error-msg" class="error-msg"></div>
+
+        <hr size="1px" width="25%" color="black" style="margin-top: 20px" />
+
+        <small>
+          <p>
+            <u><strong>A NOTE ON PRIVACY:</strong></u> This software is designed
+            to keep your notes safe and secure. Only material directly related
+            to your site is uploaded to <em>marker.network</em>. Nothing else.
+          </p>
+          <p>
+            The device token generated from this one-time-code is stored on your
+            computer and only used to authenticate with reMarkable AC.
+          </p>
+          <p>
+            If you have any questions, reach out to me at
+            <u>davidrusu.me@gmail.com</u>
+          </p>
+
+          <p>
+            This is open source software. Inspect, tinker, and contribute here:
+            <u>https://github.com/davidrusu/marker.network</u>
+          </p>
+        </small>
       </div>
-      <div id="register-spinner" class="spinner"></div>
-      <div id="register-error-msg" class="error-msg"></div>
-
-      <hr size="1px" width="25%" color="black" style="margin-top: 20px" />
-
-      <small>
-        <p>
-          <u><strong>A NOTE ON PRIVACY:</strong></u> This software is designed
-	  to keep your notes safe and secure. Only material directly related
-	  to your site is uploaded to <em>marker.network</em>. Nothing else.
-        </p>
-        <p>
-          The device token generated from this one-time-code is stored on your
-          computer and only used to authenticate with reMarkable AC.
-        </p>
-        <p>
-          If you have any questions, reach out to me at
-          <u>davidrusu.me@gmail.com</u>
-        </p>
-
-        <p>
-          This is open source software. Inspect, tinker, and contribute here:
-          <u>https://github.com/davidrusu/marker.network</u>
-        </p>
-      </small>
-    </div>
     </div>
     <button class="btn" id="start-registering">Let's Do It!</button>
     <script>
