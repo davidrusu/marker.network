@@ -9,12 +9,24 @@ import { createServer } from "http-server";
 import * as JSZip from "jszip";
 import * as FormData from "form-data";
 import axios from "axios";
+import { autoUpdater } from "electron-updater";
 
 import * as auth from "./auth";
 import * as constants from "./constants";
 import * as markerNetworkSub from "./sub";
 
 app.setAppLogsPath(); // Sets the default logging directory
+
+autoUpdater.on("update-downloaded", () => {
+  autoUpdater.quitAndInstall();
+});
+autoUpdater.checkForUpdatesAndNotify();
+
+setInterval(() => {
+  log.info("Checking for updates");
+  autoUpdater.checkForUpdatesAndNotify();
+}, 30 * 60 * 1000); // every 30 minutes
+
 
 let rM = new Remarkable();
 
