@@ -10,7 +10,8 @@ git submodule update --init marker-network-site-generator/
 
 # on linux
 rustup target install x86_64-unknown-linux-musl
-
+# on ubuntu
+sudo apt-get install musl-tools
 
 npm install
 npm run build
