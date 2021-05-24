@@ -1,6 +1,7 @@
 import * as $ from "jquery";
 
-export const spinner = $(`<svg style="margin: auto; background: #fff; display: block" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+export const spinner =
+  $(`<svg style="margin: auto; background: #fff; display: block" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
 <rect x="19" y="19" width="20" height="20" fill="#ffffff">
   <animate
     attributeName="fill"

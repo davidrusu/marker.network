@@ -29,6 +29,6 @@ $(document).ready(() => {
     $("#plan-svg").attr("src", "assets/register-step1.svg");
     $("#start-registering").hide();
     $(".instructions-content").show();
-  })
+  });
   $("#register-btn").click(attemptToRegister);
 });

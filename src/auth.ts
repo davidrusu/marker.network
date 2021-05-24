@@ -138,7 +138,7 @@ function createAuthWindow(): Promise<{
           saveUserData(userData);
           destroyAuthWin();
           resolve(
-            (userData as unknown) as { refresh_token: string; id_token: string }
+            userData as unknown as { refresh_token: string; id_token: string }
           );
         }
       });
