@@ -54,7 +54,7 @@
       "*.css"
     ],
     "asarUnpack": [
-      "dist/marker_network_site_generator",
+      "dist/marker_network_site_generator*",
       "dist/themes/**/*",
       "dist/starter/**/*"
     ],
