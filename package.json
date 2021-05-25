@@ -4,7 +4,7 @@
   "description": "A static site generator for the reMarkable Tablet",
   "main": "dist/main.js",
   "scripts": {
-    "build": "sh build.sh && tsc",
+    "build": "bash build.sh && tsc",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",
