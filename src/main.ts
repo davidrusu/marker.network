@@ -397,6 +397,17 @@ app.on("window-all-closed", () => {
 ipcMain.handle("link-device", async (event, otc) => {
   try {
     const deviceToken = await rM.register({ code: otc });
+
+    // Do some simple jwt validation on the device token to avoid storing
+    // corrupted tokens on disk
+    let jwt_parts = deviceToken.split(".");
+    if (jwt_parts.length != 3) throw new Error("Invalid JWT:" + deviceToken);
+    let jwt_header = jwt_parts[0];
+    let buff = Buffer.from(jwt_header, "base64");
+    let header_decoded = buff.toString("utf-8");
+    let header = JSON.parse(header_decoded);
+    if (header.typ !== "JWT") throw new Error("Invalid JWT:" + deviceToken);
+
     log.info("Saving device token", deviceToken);
     await saveDeviceToken(deviceToken);
     appFlow();
