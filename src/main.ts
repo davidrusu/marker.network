@@ -402,11 +402,14 @@ ipcMain.handle("link-device", async (event, otc) => {
     // corrupted tokens on disk
     let jwt_parts = deviceToken.split(".");
     if (jwt_parts.length != 3) throw new Error("Invalid JWT:" + deviceToken);
-    let jwt_header = jwt_parts[0];
-    let buff = Buffer.from(jwt_header, "base64");
-    let header_decoded = buff.toString("utf-8");
-    let header = JSON.parse(header_decoded);
-    if (header.typ !== "JWT") throw new Error("Invalid JWT:" + deviceToken);
+
+    // TODO: once Electron has updated to node 15.14, enable this code path
+    //       "base64url" was added in 15.14
+    // let jwt_header = jwt_parts[0];
+    // let buff = Buffer.from(jwt_header, "base64url");
+    // let header_decoded = buff.toString("utf-8");
+    // let header = JSON.parse(header_decoded);
+    // if (header.typ !== "JWT") throw new Error("Invalid JWT:" + deviceToken);
 
     log.info("Saving device token", deviceToken);
     await saveDeviceToken(deviceToken);
