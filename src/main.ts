@@ -14,6 +14,7 @@ import { autoUpdater } from "electron-updater";
 import * as auth from "./auth";
 import * as constants from "./constants";
 import * as markerNetworkSub from "./sub";
+import * as settings from "./settings_main";
 
 app.setAppLogsPath(); // Sets the default logging directory
 
@@ -74,7 +75,7 @@ function createDesignWebsiteWindow(): BrowserWindow {
   window.loadFile(path.join(__dirname, "../designer.html"));
   window.webContents.on("new-window", function (e, url) {
     // Open marker.network links in the users browser of choice
-    if (url.indexOf("marker.network") > -1) {
+    if (url.indexOf("marker.network/@") > -1) {
       e.preventDefault();
       shell.openExternal(url);
     }
@@ -298,7 +299,7 @@ async function designWebsite(): Promise<boolean> {
   return true;
 }
 
-async function appFlow() {
+export async function appFlow() {
   if (await registerDevice()) return;
   if (await setupSiteConfig()) return;
   if (await designWebsite()) return;
@@ -569,3 +570,5 @@ ipcMain.handle("publish", async (event) => {
       });
   });
 });
+
+settings.registerHandlers();

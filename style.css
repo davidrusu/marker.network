@@ -38,6 +38,10 @@ body {
   justify-content: center;
 }
 
+.space-between {
+  justify-content: space-between;
+}
+
 .spinner {
   display: inline-block;
   width: 25px;
@@ -77,13 +81,6 @@ body {
   flex-direction: column;
   flex-grow: 1;
   background-color: rgba(248,246, 229);
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 5px,
-    rgba(255, 255, 255, 0.25) 5px,
-    rgba(255, 255, 255, 0.25) 10px
-  );
 }
 
 .designer-preview {
@@ -133,6 +130,10 @@ body {
 
 .light-bg:hover {
   color: #222;
+}
+
+.warn {
+    background-color: #dd5555;
 }
 
 .live-btn {
@@ -201,15 +202,12 @@ li {
   margin-bottom: 6px;
 }
 
-.designer-config {
-  max-width: 300px;
-}
-
 .designer-config > * {
   margin: 6px;
 }
 
 .config-input {
+  max-width: 300px;
   padding: 0px 6px;
   width: 100%;
   font-size: 16px;
@@ -255,4 +253,29 @@ li {
 
 #start-registering {
   margin: 0 auto;
+}
+
+#confirm-dialog {
+    position: fixed;
+    padding: 10px 20px;
+    border-radius: 2px;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    box-shadow: 2.5px 2.5px 0px rgba(0,0,0,0.5);
+    background-color: #eee;
+ }
+
+.stripe-bg {
+    background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    rgba(255, 255, 255, 0.25) 5px,
+    rgba(255, 255, 255, 0.25) 10px
+  );
+}
+
+.settings-btns {
+    margin: auto;
 }

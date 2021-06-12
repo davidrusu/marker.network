@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Settings</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="container">
+    <div class="settings-btns">
+      <button id="clear-cache" class="btn">Clear Cache</button>
+      <button id="logout" class="btn">Logout</button>
+      <button id="unlink-folder" class="btn">Unlink Folder</button>
+      <button id="unlink-remarkable" class="btn">Unlink reMarkable</button>
+      <button id="start-over" class="btn warn">Start Over</button>
+    </div>
+
+    <div
+      id="confirm-dialog"
+      class="container vertical center stripe-bg"
+      style="display: none"
+    >
+      <p id="confirm-dialog-msg">No confirm message set</p>
+      <div class="container horizontal center">
+        <button id="confirm-dialog-confirm-btn" class="btn warn">
+          Confirm
+        </button>
+        <button id="confirm-dialog-cancel-btn" class="btn">Cancel</button>
+      </div>
+    </div>
+
+    <script>
+      require("./dist/settings.js");
+    </script>
+  </body>
+</html>
