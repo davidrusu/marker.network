@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>ToS Warning</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container vertical">
+      <div class="container horizontal center">
+        <h1>A quick note before we get started</h1>
+      </div>
+      <div class="container horizontal center">
+        <img id="plan-svg" class="judge-graphic" src="assets/judge.svg" />
+        <div class="judge-content">
+          <p>
+            The reMarkable Cloud service provided by reMarkable AS comes with
+            some terms and conditions that seems to suggest that accessing your
+            files from the reMarkable Cloud through third party software may
+            lead to losing access to the reMarkable Cloud.
+          </p>
+
+          <p>
+            This software has been carefully designed[1] to preserve your
+            privacy as well as interact respectfully with the reMarkable Cloud.
+          </p>
+          <p>
+            We imagine the terms and conditions are designed to protect
+            reMarkable Cloud from badly designed software, so we hope to have
+            mitigated some risk there.
+          </p>
+          <p>
+            With all that said, we can't make any guarantees, thus we want you
+            to know that you may be violating reMarkable Cloud terms and
+            conditions by using this software.
+          </p>
+
+          <a
+            href="https://support.remarkable.com/hc/en-us/categories/115000868605-Legal"
+            target="_blank"
+          >
+            reMarkable AS. Terms &amp Conditions
+          </a>
+        </div>
+      </div>
+
+      <div class="container horizontal center judge-buttons">
+        <button id="confirm-btn" class="btn">
+          I understand and I wish to continue
+        </button>
+        <button id="decline-btn" class="btn">No thanks</button>
+      </div>
+    </div>
+    <hr />
+    <div class="judge-content">
+      <small>
+        [1] We keep your device token safely on your machine and cache your
+        notebooks in-order to put minimal load on reMarkable Cloud.
+        <br /><br />This software is open-source and licensed under GPL-3
+        <a href="https://github.com/davidrusu/marker.network" target="_blank">
+          github.com/davidrusu/marker.network
+        </a>
+      </small>
+    </div>
+
+    <script>
+      require("./dist/tos_warning.js");
+    </script>
+  </body>
+</html>

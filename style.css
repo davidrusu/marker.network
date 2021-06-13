@@ -279,3 +279,16 @@ li {
 .settings-btns {
     margin: auto;
 }
+
+.judge-graphic {
+    max-height: 50vh;
+    margin: auto 20px;
+}
+
+.judge-content {
+    margin: auto 20px;
+}
+
+.judge-buttons {
+    margin-top: 20px;
+}

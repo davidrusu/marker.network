@@ -5,6 +5,10 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as log from "electron-log";
 
 export const APP_DATA = path.join(app.getPath("appData"), "marker.network");
+export const CONFIRM_TOS_WARNING_PATH = path.join(
+  APP_DATA,
+  "confirmed_tos_warning"
+);
 export const MATERIAL_PATH = path.join(APP_DATA, "material");
 export const BUILD_PATH = path.join(APP_DATA, "build");
 export const DEVICE_TOKEN_PATH = path.join(APP_DATA, "device_token");

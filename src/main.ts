@@ -30,6 +30,19 @@ setInterval(() => {
 
 let rM = new Remarkable();
 
+function createTosWarningWindow(): BrowserWindow {
+  const window = new BrowserWindow({
+    height: 580,
+    width: 600,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+  window.loadFile(path.join(__dirname, "../tos-warning.html"));
+  return window;
+}
+
 function createRegisterWindow(): BrowserWindow {
   const window = new BrowserWindow({
     height: 600,
@@ -264,6 +277,18 @@ async function siteGeneratorGen(): Promise<{
   });
 }
 
+async function confirmTosWarning(): Promise<boolean> {
+  if (og_fs.existsSync(constants.CONFIRM_TOS_WARNING_PATH)) {
+    log.info("User has already confirmed TOS warning, skipping");
+    return false;
+  } else {
+    log.info("User has not yet confirmed TOS warning, prompting");
+    let win = createTosWarningWindow();
+    closeAllWindowsExcept(win);
+    return true;
+  }
+}
+
 async function registerDevice(): Promise<boolean> {
   try {
     let deviceToken = await loadDeviceToken();
@@ -300,6 +325,7 @@ async function designWebsite(): Promise<boolean> {
 }
 
 export async function appFlow() {
+  if (await confirmTosWarning()) return;
   if (await registerDevice()) return;
   if (await setupSiteConfig()) return;
   if (await designWebsite()) return;
@@ -393,6 +419,21 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+ipcMain.handle("confirm-tos-warning", async () => {
+  log.info("Confirming ToS warning");
+  await fs.writeFile(
+    constants.CONFIRM_TOS_WARNING_PATH,
+    new Date().toString(),
+    "utf-8"
+  );
+  await appFlow();
+});
+
+ipcMain.handle("decline-tos-warning", () => {
+  log.info("ToS Warning Declined");
+  app.exit();
 });
 
 ipcMain.handle("link-device", async (event, otc) => {
