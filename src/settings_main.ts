@@ -23,6 +23,8 @@ async function rm(path: string, options: { recursive: boolean } = undefined) {
 }
 
 export function registerHandlers() {
+  ipcMain.handle("create-settings-window", createSettingsWindow);
+
   ipcMain.handle("clear-cache", async (event) => {
     log.info("Logging out");
     await rm(constants.MATERIAL_PATH, { recursive: true });
@@ -67,14 +69,14 @@ export function createSettingsWindow() {
     width: 400,
     height: 300,
     webPreferences: {
-      nodeIntegration: false,
-      enableRemoteModule: false,
+      nodeIntegration: true,
+      contextIsolation: false,
     },
   });
 
   win.loadFile(path.join(__dirname, "../settings.html"));
 
-  win.on("closed", async () => {
+  win.on("closed", () => {
     win = null;
   });
 }

@@ -277,7 +277,10 @@ li {
 }
 
 .settings-btns {
-    margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: auto;
 }
 
 .judge-graphic {

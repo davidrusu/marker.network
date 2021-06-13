@@ -26,7 +26,12 @@ async function startOver() {
 function confirm(msg: string, cb: () => any) {
   $("#confirm-dialog-msg").text(msg);
   $("#confirm-dialog").show();
-  $("#confirm-dialog-confirm-btn").off().on("click", cb);
+  $("#confirm-dialog-confirm-btn")
+    .off()
+    .on("click", async () => {
+      await cb();
+      window.close();
+    });
   $("#confirm-dialog-cancel-btn")
     .off()
     .on("click", () => {

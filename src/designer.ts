@@ -49,6 +49,10 @@ function reloadDesigner() {
   );
 }
 
+async function openSettings() {
+  await ipcRenderer.invoke("create-settings-window");
+}
+
 let CONFIG: { title: string; alias: string } = { title: "", alias: null };
 async function saveSiteConfig() {
   CONFIG.title = $("#site-title-input").val() as string;
@@ -80,8 +84,9 @@ async function loadConfig(): Promise<void> {
 
 loadConfig().then(() => {
   $(document).ready(() => {
-    $("#designer-reload").click(reloadDesigner);
-    $("#designer-publish").click(publishDesigner);
+    $("#designer-reload").on("click", reloadDesigner);
+    $("#designer-publish").on("click", publishDesigner);
+    $("#settings-btn").on("click", openSettings);
     $("#site-title-input").on("change", saveSiteConfig);
   });
 });
