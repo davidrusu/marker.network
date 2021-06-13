@@ -121,8 +121,7 @@ function createAliasWindow(user: { id_token: string }): Promise<string> {
       } catch (e) {
         return {
           success: false,
-          msg:
-            "Something went wrong, please try again. If the problem persists, send me an email at davidrusu.me@gmail.com and we can track down the problem",
+          msg: "Something went wrong, please try again. If the problem persists, send me an email at davidrusu.me@gmail.com and we can track down the problem",
         };
       }
     });
@@ -184,9 +183,7 @@ function generatorProc(args: string[]): ChildProcess {
   });
 }
 
-async function siteGeneratorInit(
-  siteName: string
-): Promise<{
+async function siteGeneratorInit(siteName: string): Promise<{
   success: boolean;
   msg: string;
 }> {
@@ -506,7 +503,7 @@ ipcMain.handle("load-preview", async () => {
     let { success, msg } = await siteGeneratorGen();
 
     if (success) {
-      let s = ((server as unknown) as { server: any }).server;
+      let s = (server as unknown as { server: any }).server;
       let port = s.address().port;
       let nonce = Math.floor(Date.now() / 1000);
       if (designerWin && !designerWin.isDestroyed()) {

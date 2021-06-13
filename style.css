@@ -80,7 +80,7 @@ body {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  background-color: rgba(248,246, 229);
+  background-color: rgba(248, 246, 229);
 }
 
 .designer-preview {
@@ -93,7 +93,7 @@ body {
   resize: both;
   border: 1px solid black;
   /* box-shadow: 4px 6px 20px rgba(0, 0, 0, 0.25); */
-  box-shadow: 4px 6px 0px rgba(0,0,0,0.2);
+  box-shadow: 4px 6px 0px rgba(0, 0, 0, 0.2);
   user-select: none;
   border-radius: 2px;
 }
@@ -107,19 +107,19 @@ body {
   border: none;
   color: white;
   background-color: black;
-  box-shadow: 2.5px 2.5px 0px rgba(0,0,0,0.5);
+  box-shadow: 2.5px 2.5px 0px rgba(0, 0, 0, 0.5);
   padding: 1px 3px;
   border-radius: 2px;
 }
 
 .btn:hover {
   transform: translate(1px, 1px);
-  box-shadow: 1.5px 1.5px 0px rgba(0,0,0,0.5);
+  box-shadow: 1.5px 1.5px 0px rgba(0, 0, 0, 0.5);
 }
 
 .btn:active {
   transform: translate(1.5px, 1.5px);
-  box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+  box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
 }
 
 .light-bg {
@@ -133,7 +133,7 @@ body {
 }
 
 .warn {
-    background-color: #dd5555;
+  background-color: #dd5555;
 }
 
 .live-btn {
@@ -219,9 +219,9 @@ li {
 }
 
 .config-label {
-    background-color: black;
-    color: white;
-    padding: 0px 2px;
+  background-color: black;
+  color: white;
+  padding: 0px 2px;
 }
 
 #preview-loading {
@@ -256,18 +256,18 @@ li {
 }
 
 #confirm-dialog {
-    position: fixed;
-    padding: 10px 20px;
-    border-radius: 2px;
-    top: 50vh;
-    left: 50vw;
-    transform: translate(-50%, -50%);
-    box-shadow: 2.5px 2.5px 0px rgba(0,0,0,0.5);
-    background-color: #eee;
- }
+  position: fixed;
+  padding: 10px 20px;
+  border-radius: 2px;
+  top: 50vh;
+  left: 50vw;
+  transform: translate(-50%, -50%);
+  box-shadow: 2.5px 2.5px 0px rgba(0, 0, 0, 0.5);
+  background-color: #eee;
+}
 
 .stripe-bg {
-    background-image: repeating-linear-gradient(
+  background-image: repeating-linear-gradient(
     -45deg,
     transparent,
     transparent 5px,
@@ -284,14 +284,14 @@ li {
 }
 
 .judge-graphic {
-    max-height: 50vh;
-    margin: auto 20px;
+  max-height: 50vh;
+  margin: auto 20px;
 }
 
 .judge-content {
-    margin: auto 20px;
+  margin: auto 20px;
 }
 
 .judge-buttons {
-    margin-top: 20px;
+  margin-top: 20px;
 }
