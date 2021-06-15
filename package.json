@@ -1,6 +1,6 @@
 {
   "name": "marker.network",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A static site generator for the reMarkable Tablet",
   "main": "dist/main.js",
   "scripts": {
