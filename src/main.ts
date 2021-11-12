@@ -4,7 +4,7 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import * as og_fs from "fs";
 import { execFile, ChildProcess } from "child_process";
-import { Remarkable, ItemResponse } from "remarkable-typescript";
+import { Remarkable } from "remarkable-typescript";
 import { createServer } from "http-server";
 import * as JSZip from "jszip";
 import * as FormData from "form-data";
@@ -13,7 +13,6 @@ import { autoUpdater } from "electron-updater";
 
 import * as auth from "./auth";
 import * as constants from "./constants";
-import * as markerNetworkSub from "./sub";
 import * as settings from "./settings_main";
 
 app.setAppLogsPath(); // Sets the default logging directory
@@ -28,7 +27,7 @@ setInterval(() => {
   autoUpdater.checkForUpdatesAndNotify();
 }, 30 * 60 * 1000); // every 30 minutes
 
-let rM = new Remarkable();
+const rM = new Remarkable();
 
 function createTosWarningWindow(): BrowserWindow {
   const window = new BrowserWindow({
@@ -110,7 +109,7 @@ function createAliasWindow(user: { id_token: string }): Promise<string> {
     log.info("Creating save site alias channel");
     ipcMain.handle("save-site-alias", async (event, alias) => {
       try {
-        let resp = await reserveSiteAlias(user, alias);
+        const resp = await reserveSiteAlias(user, alias);
         if (resp.success) {
           await saveAlias(alias);
           resolve(alias);
@@ -134,7 +133,7 @@ function createAliasWindow(user: { id_token: string }): Promise<string> {
 }
 
 async function loadDeviceToken(): Promise<string> {
-  let deviceToken = await fs.readFile(constants.DEVICE_TOKEN_PATH, "utf-8");
+  const deviceToken = await fs.readFile(constants.DEVICE_TOKEN_PATH, "utf-8");
   return deviceToken;
 }
 
@@ -147,7 +146,7 @@ async function loadSiteConfig(): Promise<{
   title: string;
   theme: string;
 }> {
-  let siteConfigData = await fs.readFile(constants.SITE_CONFIG_PATH, "utf-8");
+  const siteConfigData = await fs.readFile(constants.SITE_CONFIG_PATH, "utf-8");
   return JSON.parse(siteConfigData);
 }
 
@@ -160,8 +159,8 @@ async function saveSiteConfig(config: {
   //   1. first write to a tmp file
   //   2. atomically rename the tmp file to constants.SITE_CONFIG_PATH after tmp file is written successfully.
 
-  let configString = JSON.stringify(config, null, 2);
-  let tempFile = `${constants.SITE_CONFIG_PATH}.tmp`;
+  const configString = JSON.stringify(config, null, 2);
+  const tempFile = `${constants.SITE_CONFIG_PATH}.tmp`;
   await fs.writeFile(tempFile, configString, "utf-8");
   await fs.rename(tempFile, constants.SITE_CONFIG_PATH);
 }
@@ -171,7 +170,7 @@ function fixAsarUnpackedPath(path: string): string {
 }
 
 function siteGeneratorPath(): string {
-  let generatorPath = fixAsarUnpackedPath(
+  const generatorPath = fixAsarUnpackedPath(
     path.join(__dirname, "marker_network_site_generator")
   );
   log.info("Site Generator Path: ", generatorPath);
@@ -189,9 +188,9 @@ async function siteGeneratorInit(siteName: string): Promise<{
   msg: string;
 }> {
   log.info("Initializing site with site generator");
-  let deviceToken = await loadDeviceToken();
+  const deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
-    let proc = generatorProc([
+    const proc = generatorProc([
       constants.SITE_CONFIG_PATH,
       "init",
       deviceToken,
@@ -220,9 +219,9 @@ async function siteGeneratorFetch(): Promise<{
     "Fetching material with site generator into",
     constants.MATERIAL_PATH
   );
-  let deviceToken = await loadDeviceToken();
+  const deviceToken = await loadDeviceToken();
   return new Promise((resolve) => {
-    let proc = generatorProc([
+    const proc = generatorProc([
       constants.SITE_CONFIG_PATH,
       "fetch",
       deviceToken,
@@ -254,7 +253,7 @@ async function siteGeneratorGen(): Promise<{
     constants.BUILD_PATH
   );
   return new Promise((resolve) => {
-    let proc = generatorProc([
+    const proc = generatorProc([
       constants.SITE_CONFIG_PATH,
       "gen",
       constants.MATERIAL_PATH,
@@ -281,7 +280,7 @@ async function confirmTosWarning(): Promise<boolean> {
     return false;
   } else {
     log.info("User has not yet confirmed TOS warning, prompting");
-    let win = createTosWarningWindow();
+    const win = createTosWarningWindow();
     closeAllWindowsExcept(win);
     return true;
   }
@@ -289,12 +288,12 @@ async function confirmTosWarning(): Promise<boolean> {
 
 async function registerDevice(): Promise<boolean> {
   try {
-    let deviceToken = await loadDeviceToken();
-    log.info("Found existing device token, skipping registration");
+    const deviceToken = await loadDeviceToken();
+    log.info("Found existing device token, skipping registration: ", deviceToken);
     return false;
   } catch (e) {
     log.info("No device token found, registering device");
-    let win = createRegisterWindow();
+    const win = createRegisterWindow();
     closeAllWindowsExcept(win);
     return true;
   }
@@ -303,12 +302,12 @@ async function registerDevice(): Promise<boolean> {
 async function setupSiteConfig(): Promise<boolean> {
   log.info("Choosing root directory");
   try {
-    let siteConfig = await loadSiteConfig();
+    const siteConfig = await loadSiteConfig();
     log.info("Found existing site config, skipping setup", siteConfig);
     return false;
   } catch (e) {
     log.info("No site config, going through site config setup");
-    let win = createChooseFolderWindow();
+    const win = createChooseFolderWindow();
     closeAllWindowsExcept(win);
     return true;
   }
@@ -356,7 +355,7 @@ async function reserveSiteAlias(
   alias: string
 ): Promise<{ success: boolean; msg: string }> {
   log.info("Reserveing site alias", alias);
-  let resp = await axios({
+  const resp = await axios({
     url: `/reserve/${alias}`,
     method: "post",
     headers: { Authorization: `Bearer ${user.id_token}` },
@@ -373,30 +372,31 @@ async function reserveSiteAlias(
   }
 }
 
-async function verifySubscription(user: string): Promise<boolean> {
-  if (!(await og_fs.existsSync(constants.MARKER_NETWORK_SUB))) {
-    let checkoutSession = await markerNetworkSub.createCheckoutSession(user);
-    if (checkoutSession) {
-      let subbed = await markerNetworkSub.createCheckoutWindow(checkoutSession);
-      if (subbed) {
-        await fs.writeFile(constants.MARKER_NETWORK_SUB, "xxx", "utf-8");
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  } else {
-    return true;
-  }
-}
+// import * as markerNetworkSub from "./sub";
+// async function verifySubscription(user: string): Promise<boolean> {
+//   if (!(await og_fs.existsSync(constants.MARKER_NETWORK_SUB))) {
+//     const checkoutSession = await markerNetworkSub.createCheckoutSession(user);
+//     if (checkoutSession) {
+//       const subbed = await markerNetworkSub.createCheckoutWindow(checkoutSession);
+//       if (subbed) {
+//         await fs.writeFile(constants.MARKER_NETWORK_SUB, "xxx", "utf-8");
+//         return true;
+//       } else {
+//         return false;
+//       }
+//     } else {
+//       return false;
+//     }
+//   } else {
+//     return true;
+//   }
+// }
 
 app.on("ready", async () => {
   // HACK! for some reason async ipc stalls and this
   // setInterval seems to keep things running.
   // I have no clue what's happening here.
-  setInterval(() => {}, 500);
+  setInterval(() => null, 500);
 
   await appFlow();
 
@@ -435,7 +435,7 @@ ipcMain.handle("link-device", async (event, otc) => {
 
     // Do some simple jwt validation on the device token to avoid storing
     // corrupted tokens on disk
-    let jwt_parts = deviceToken.split(".");
+    const jwt_parts = deviceToken.split(".");
     if (jwt_parts.length != 3) throw new Error("Invalid JWT:" + deviceToken);
 
     // TODO: once Electron has updated to node 15.14, enable this code path
@@ -457,7 +457,7 @@ ipcMain.handle("link-device", async (event, otc) => {
 });
 
 ipcMain.handle("init-site", async (event, rMFolderName) => {
-  let norm = (s: string) => s.trim().replace("  ", " ");
+  const norm = (s: string) => s.trim().replace("  ", " ");
   let normed = norm(rMFolderName);
   while (normed !== rMFolderName) {
     rMFolderName = normed;
@@ -466,7 +466,7 @@ ipcMain.handle("init-site", async (event, rMFolderName) => {
 
   try {
     log.info("Creating site folder on device", rMFolderName);
-    let { success, msg } = await siteGeneratorInit(rMFolderName);
+    const { success, msg } = await siteGeneratorInit(rMFolderName);
 
     if (success) {
       appFlow();
@@ -487,21 +487,21 @@ ipcMain.handle("init-site", async (event, rMFolderName) => {
   }
 });
 
-let server = createServer({ root: constants.BUILD_PATH });
-let URL = "127.0.0.1";
+const server = createServer({ root: constants.BUILD_PATH });
+const URL = "127.0.0.1";
 server.listen(0, URL);
 
 ipcMain.handle("load-preview", async () => {
   log.info("Loading preview");
-  let { success, msg } = await siteGeneratorFetch();
+  const { success, msg } = await siteGeneratorFetch();
 
   if (success) {
-    let { success, msg } = await siteGeneratorGen();
+    const { success, msg } = await siteGeneratorGen();
 
     if (success) {
-      let s = (server as unknown as { server: any }).server;
-      let port = s.address().port;
-      let nonce = Math.floor(Date.now() / 1000);
+      const s = (server as unknown as { server: { address: () => { port: number}}}).server;
+      const port = s.address().port;
+      const nonce = Math.floor(Date.now() / 1000);
       if (designerWin && !designerWin.isDestroyed()) {
         // sometimes aggressive browser caching prevents the iframe from reloading
         await designerWin.webContents.session.clearCache();
@@ -523,19 +523,19 @@ ipcMain.handle("load-preview", async () => {
 
 ipcMain.handle("load-site-config", async () => {
   log.info("Loading site config");
-  let config: any = await loadSiteConfig();
+  const config = {...await loadSiteConfig(), ...{alias: null}};
   try {
-    let alias = await loadAlias();
+    const alias = await loadAlias();
     config.alias = alias;
   } catch (e) {
-    config.alias = null;
+    log.error("Failed to load alias", e)
   }
   return config;
 });
 
 ipcMain.handle("save-site-config", async (event, config) => {
   log.info("Saving site config", config);
-  let validatedConfig = {
+  const validatedConfig = {
     title: config.title,
     theme: config.theme,
     site_root: config.site_root,
@@ -543,10 +543,10 @@ ipcMain.handle("save-site-config", async (event, config) => {
   return saveSiteConfig(validatedConfig);
 });
 
-ipcMain.handle("publish", async (event) => {
+ipcMain.handle("publish", async () => {
   log.info("Publishing site");
 
-  let user = await auth.login();
+  const user = await auth.login();
 
   // TODO: Figure out how to fund this work
   // let subbed = await verifySubscription(user.id_token);
@@ -554,31 +554,31 @@ ipcMain.handle("publish", async (event) => {
   //   return 0;
   // }
 
-  let alias = await siteAlias(user);
+  const alias = await siteAlias(user);
   log.info("Publishing to alias", alias);
-  let zip = JSZip();
+  const zip = JSZip();
 
-  let config = await loadSiteConfig();
+  const config = await loadSiteConfig();
   zip.file("config.json", JSON.stringify(config));
 
-  let manifest = await fs.readFile(
+  const manifest = await fs.readFile(
     path.join(constants.MATERIAL_PATH, "manifest.json"),
     "utf-8"
   );
 
   zip.file("manifest.json", manifest);
 
-  let zips = await fs.readdir(path.join(constants.MATERIAL_PATH, "zip"));
+  const zips = await fs.readdir(path.join(constants.MATERIAL_PATH, "zip"));
   for (const notebook_zip of zips) {
     log.info("zipping", notebook_zip);
-    let zipData = await fs.readFile(
+    const zipData = await fs.readFile(
       path.join(constants.MATERIAL_PATH, "zip", notebook_zip)
     );
     zip.file(`zip/${notebook_zip}`, zipData);
   }
 
   log.info("finished building zip, starting upload");
-  let marker_network_zip = path.join(constants.APP_DATA, "marker_network.zip");
+  const marker_network_zip = path.join(constants.APP_DATA, "marker_network.zip");
 
   return new Promise((resolve) => {
     zip
@@ -587,7 +587,7 @@ ipcMain.handle("publish", async (event) => {
       .on("finish", async () => {
         console.log(`${marker_network_zip} written.`);
 
-        var form = new FormData();
+        const form = new FormData();
         form.append("file", og_fs.createReadStream(marker_network_zip));
         form.submit(
           {

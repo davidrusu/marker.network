@@ -1,9 +1,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
-import * as url from "url";
 import * as log from "electron-log";
 import { ipcMain, BrowserWindow } from "electron";
-import { AuthenticationClient } from "auth0";
 
 import * as constants from "./constants";
 import * as main from "./main";
@@ -25,31 +23,31 @@ async function rm(path: string, options: { recursive: boolean } = undefined) {
 export function registerHandlers() {
   ipcMain.handle("create-settings-window", createSettingsWindow);
 
-  ipcMain.handle("clear-cache", async (event) => {
+  ipcMain.handle("clear-cache", async () => {
     log.info("Logging out");
     await rm(constants.MATERIAL_PATH, { recursive: true });
     await rm(constants.BUILD_PATH, { recursive: true });
   });
 
-  ipcMain.handle("logout", async (event) => {
+  ipcMain.handle("logout", async () => {
     log.info("Logging out");
 
     await rm(constants.MARKER_NETWORK_USER_DATA);
   });
 
-  ipcMain.handle("unlink-folder", async (event) => {
+  ipcMain.handle("unlink-folder", async () => {
     log.info("Unlinking folder");
     await rm(constants.SITE_CONFIG_PATH);
     await main.appFlow();
   });
 
-  ipcMain.handle("unlink-remarkable", async (event) => {
+  ipcMain.handle("unlink-remarkable", async () => {
     log.info("Unlinking remarkable");
     await rm(constants.DEVICE_TOKEN_PATH);
     await main.appFlow();
   });
 
-  ipcMain.handle("start-over", async (event) => {
+  ipcMain.handle("start-over", async () => {
     log.info("Starting over");
 
     await rm(constants.DEVICE_TOKEN_PATH);

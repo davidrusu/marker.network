@@ -1,5 +1,4 @@
 import * as fs from "fs/promises";
-import * as path from "path";
 import * as url from "url";
 import * as log from "electron-log";
 import { BrowserWindow } from "electron";
@@ -34,7 +33,7 @@ async function loadUserData(): Promise<{
   refresh_token: string;
   id_token: string;
 }> {
-  let userData = await fs.readFile(constants.MARKER_NETWORK_USER_DATA, "utf-8");
+  const userData = await fs.readFile(constants.MARKER_NETWORK_USER_DATA, "utf-8");
   return JSON.parse(userData);
 }
 
@@ -43,8 +42,8 @@ async function saveUserData(userData: object): Promise<void> {
   //   1. first write to a tmp file
   //   2. atomically rename the tmp file to constants.MARKER_NETWORK_USER_DATA after tmp file is written successfully.
 
-  let userDataString = JSON.stringify(userData, null, 2);
-  let tempFile = `${constants.MARKER_NETWORK_USER_DATA}.tmp`;
+  const userDataString = JSON.stringify(userData, null, 2);
+  const tempFile = `${constants.MARKER_NETWORK_USER_DATA}.tmp`;
   await fs.writeFile(tempFile, userDataString, "utf-8");
   await fs.rename(tempFile, constants.MARKER_NETWORK_USER_DATA);
 }
@@ -65,7 +64,7 @@ export async function login(): Promise<{
   id_token: string;
 }> {
   try {
-    let userData = await loadUserData();
+    const userData = await loadUserData();
     return new Promise((resolve, reject) => {
       try {
         auth0.refreshToken(

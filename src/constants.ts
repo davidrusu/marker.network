@@ -1,7 +1,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app } from "electron";
 import * as log from "electron-log";
 
 export const APP_DATA = path.join(app.getPath("appData"), "marker.network");

@@ -7,7 +7,7 @@ const SUCCESS_URL = "http://localhost/success";
 const CANCEL_URL = "http://localhost/cancel";
 
 export async function createCheckoutSession(user: string): Promise<string> {
-  let resp = await axios({
+  const resp = await axios({
     url: `/stripe_checkout_session`,
     method: "post",
     headers: { Authorization: `Bearer ${user}` },
@@ -26,7 +26,7 @@ let win: BrowserWindow = null;
 export function createCheckoutWindow(
   checkoutSessionId: string
 ): Promise<boolean> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     destroySubWin();
 
     win = new BrowserWindow({

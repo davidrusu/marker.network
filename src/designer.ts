@@ -69,7 +69,7 @@ async function loadConfig(): Promise<void> {
       CONFIG = config;
       $("#site-title-input").val(CONFIG.title);
       if (CONFIG.alias) {
-        let marker_network_site_alias = `marker.network/@${CONFIG.alias}`;
+        const marker_network_site_alias = `marker.network/@${CONFIG.alias}`;
         $("#marker-network-site-link")
           .removeClass("hidden")
           .attr("href", `https://${marker_network_site_alias}`)

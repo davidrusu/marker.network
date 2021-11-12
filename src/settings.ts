@@ -1,8 +1,6 @@
 import { ipcRenderer } from "electron";
 import * as $ from "jquery";
 
-import { spinner } from "./nice_stuff";
-
 async function clearCache() {
   await ipcRenderer.invoke("clear-cache");
 }
@@ -23,7 +21,7 @@ async function startOver() {
   await ipcRenderer.invoke("start-over");
 }
 
-function confirm(msg: string, cb: () => any) {
+function confirm(msg: string, cb: () => Promise<void>) {
   $("#confirm-dialog-msg").text(msg);
   $("#confirm-dialog").show();
   $("#confirm-dialog-confirm-btn")
