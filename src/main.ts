@@ -119,9 +119,10 @@ function createAliasWindow(user: { id_token: string }): Promise<string> {
           return resp;
         }
       } catch (e) {
+	log.error("Failed to save-site-alias:", e);
         return {
           success: false,
-          msg: "Something went wrong, please try again. If the problem persists, send me an email at davidrusu.me@gmail.com and we can track down the problem",
+          msg: "Something went wrong, please try again. If the problem persists, send me an email at davidrusu.me@gmail.com and we can track down the problem: \n" + e.toString(),
         };
       }
     });
