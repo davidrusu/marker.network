@@ -297,7 +297,7 @@ li {
 }
 
 #cmd-log {
-  overflow: scroll;
+  overflow: auto;
   max-height: 25vh;
   color: white;
   padding: 20px;
