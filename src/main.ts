@@ -409,14 +409,9 @@ app.on("ready", async () => {
   });
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  log.info("All windows closed");
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  log.info("All windows closed, quitting marker.network");
+  app.quit();
 });
 
 ipcMain.handle("confirm-tos-warning", async () => {
