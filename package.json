@@ -1,6 +1,6 @@
 {
   "name": "marker.network",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "A static site generator for the reMarkable Tablet",
   "main": "dist/main.js",
   "scripts": {
@@ -30,8 +30,8 @@
     "@typescript-eslint/eslint-plugin": "5.3.1",
     "@typescript-eslint/parser": "5.3.1",
     "electron": "12.0.1",
-    "electron-builder": "^22.10.5",
-    "electron-notarize": "^1.0.0",
+    "electron-builder": "22.13.1",
+    "electron-notarize": "1.1.1",
     "eslint": "8.2.0",
     "typescript": "^4.4"
   },
