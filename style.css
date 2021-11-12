@@ -295,3 +295,24 @@ li {
 .judge-buttons {
   margin-top: 20px;
 }
+
+#cmd-log {
+  overflow: scroll;
+  max-height: 25vh;
+  color: white;
+  padding: 20px;
+  margin: unset;
+  border-radius: 2px;
+  box-shadow: 2.5px 2.5px 0px rgba(0, 0, 0, 0.5);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(40, 40, 40, 1),
+    rgba(40, 40, 40, 1) 5px,
+    rgba(40, 40, 40, 0.99) 5px,
+    rgba(40, 40, 40, 0.99) 10px
+  );
+}
+
+#log-area {
+  margin: 20px;
+}

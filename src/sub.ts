@@ -34,7 +34,6 @@ export function createCheckoutWindow(
       height: 800,
       webPreferences: {
         nodeIntegration: false,
-        enableRemoteModule: false,
       },
     });
 

@@ -33,7 +33,10 @@ async function loadUserData(): Promise<{
   refresh_token: string;
   id_token: string;
 }> {
-  const userData = await fs.readFile(constants.MARKER_NETWORK_USER_DATA, "utf-8");
+  const userData = await fs.readFile(
+    constants.MARKER_NETWORK_USER_DATA,
+    "utf-8"
+  );
   return JSON.parse(userData);
 }
 
@@ -106,7 +109,6 @@ function createAuthWindow(): Promise<{
       height: 600,
       webPreferences: {
         nodeIntegration: false,
-        enableRemoteModule: false,
       },
     });
 

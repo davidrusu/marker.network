@@ -88,5 +88,13 @@ loadConfig().then(() => {
     $("#designer-publish").on("click", publishDesigner);
     $("#settings-btn").on("click", openSettings);
     $("#site-title-input").on("change", saveSiteConfig);
+    $("#toggle-cmd-log").on("click", () => $("#cmd-log").toggle());
+
+    ipcRenderer.on("cmd-log", (event, message) => {
+      const $target = $("#cmd-log");
+      $target.append(message);
+      console.log($target[0].scrollHeight);
+      $target[0].scroll(0, $target[0].scrollHeight);
+    });
   });
 });

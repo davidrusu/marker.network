@@ -118,10 +118,12 @@ function createAliasWindow(user: { id_token: string }): Promise<string> {
           return resp;
         }
       } catch (e) {
-	log.error("Failed to save-site-alias:", e);
+        log.error("Failed to save-site-alias:", e);
         return {
           success: false,
-          msg: "Something went wrong, please try again. If the problem persists, send me an email at davidrusu.me@gmail.com and we can track down the problem: \n" + e.toString(),
+          msg:
+            "Something went wrong, please try again. If the problem persists, send me an email at davidrusu.me@gmail.com and we can track down the problem: \n" +
+            e.toString(),
         };
       }
     });
@@ -227,16 +229,33 @@ async function siteGeneratorFetch(): Promise<{
       deviceToken,
       constants.MATERIAL_PATH,
     ]);
+
+    if (designerWin) {
+      designerWin.webContents.send("cmd-log", "Fetching Notebooks...\n");
+    }
     let stdErr = "";
     proc.stderr.on("data", (data) => {
       stdErr = data;
       log.info(`site-generator stderr: ${data}`);
+      if (designerWin) {
+        designerWin.webContents.send("cmd-log", data);
+      }
     });
     proc.stdout.on("data", (data) => {
       log.info(`site-generator stdout: ${data}`);
+      if (designerWin) {
+        designerWin.webContents.send("cmd-log", data);
+      }
     });
     proc.on("exit", (exitCode) => {
       log.info(`site-generator exited with code ${exitCode}`);
+
+      if (designerWin) {
+        designerWin.webContents.send(
+          "cmd-log",
+          `Fetching notebooks finished with code ${exitCode}\n`
+        );
+      }
       resolve({ success: exitCode === 0, msg: stdErr });
     });
   });
@@ -259,16 +278,31 @@ async function siteGeneratorGen(): Promise<{
       constants.MATERIAL_PATH,
       constants.BUILD_PATH,
     ]);
+    if (designerWin) {
+      designerWin.webContents.send("cmd-log", "Generating Site...\n");
+    }
     let stdErr = "";
     proc.stderr.on("data", (data) => {
       stdErr = data;
+      if (designerWin) {
+        designerWin.webContents.send("cmd-log", data);
+      }
       log.info(`site-generator stderr: ${data}`);
     });
     proc.stdout.on("data", (data) => {
       log.info(`site-generator stdout: ${data}`);
+      if (designerWin) {
+        designerWin.webContents.send("cmd-log", data);
+      }
     });
     proc.on("exit", (exitCode) => {
       log.info(`site-generator exited with code ${exitCode}`);
+      if (designerWin) {
+        designerWin.webContents.send(
+          "cmd-log",
+          `Site rendering completed with code ${exitCode}\n`
+        );
+      }
       resolve({ success: exitCode === 0, msg: stdErr });
     });
   });
@@ -289,7 +323,10 @@ async function confirmTosWarning(): Promise<boolean> {
 async function registerDevice(): Promise<boolean> {
   try {
     const deviceToken = await loadDeviceToken();
-    log.info("Found existing device token, skipping registration: ", deviceToken);
+    log.info(
+      "Found existing device token, skipping registration: ",
+      deviceToken
+    );
     return false;
   } catch (e) {
     log.info("No device token found, registering device");
@@ -499,7 +536,9 @@ ipcMain.handle("load-preview", async () => {
     const { success, msg } = await siteGeneratorGen();
 
     if (success) {
-      const s = (server as unknown as { server: { address: () => { port: number}}}).server;
+      const s = (
+        server as unknown as { server: { address: () => { port: number } } }
+      ).server;
       const port = s.address().port;
       const nonce = Math.floor(Date.now() / 1000);
       if (designerWin && !designerWin.isDestroyed()) {
@@ -523,12 +562,12 @@ ipcMain.handle("load-preview", async () => {
 
 ipcMain.handle("load-site-config", async () => {
   log.info("Loading site config");
-  const config = {...await loadSiteConfig(), ...{alias: null}};
+  const config = { ...(await loadSiteConfig()), ...{ alias: null } };
   try {
     const alias = await loadAlias();
     config.alias = alias;
   } catch (e) {
-    log.error("Failed to load alias", e)
+    log.error("Failed to load alias", e);
   }
   return config;
 });
@@ -545,6 +584,9 @@ ipcMain.handle("save-site-config", async (event, config) => {
 
 ipcMain.handle("publish", async () => {
   log.info("Publishing site");
+  if (designerWin) {
+    designerWin.webContents.send("cmd-log", "Publishing\n");
+  }
 
   const user = await auth.login();
 
@@ -556,6 +598,10 @@ ipcMain.handle("publish", async () => {
 
   const alias = await siteAlias(user);
   log.info("Publishing to alias", alias);
+  if (designerWin) {
+    designerWin.webContents.send("cmd-log", `Publishing to alias @${alias}\n`);
+  }
+
   const zip = JSZip();
 
   const config = await loadSiteConfig();
@@ -571,6 +617,12 @@ ipcMain.handle("publish", async () => {
   const zips = await fs.readdir(path.join(constants.MATERIAL_PATH, "zip"));
   for (const notebook_zip of zips) {
     log.info("zipping", notebook_zip);
+    if (designerWin) {
+      designerWin.webContents.send(
+        "cmd-log",
+        `Zipping notebook ${notebook_zip}\n`
+      );
+    }
     const zipData = await fs.readFile(
       path.join(constants.MATERIAL_PATH, "zip", notebook_zip)
     );
@@ -578,7 +630,16 @@ ipcMain.handle("publish", async () => {
   }
 
   log.info("finished building zip, starting upload");
-  const marker_network_zip = path.join(constants.APP_DATA, "marker_network.zip");
+  if (designerWin) {
+    designerWin.webContents.send(
+      "cmd-log",
+      `Finished zipping notebooks, starting upload\n`
+    );
+  }
+  const marker_network_zip = path.join(
+    constants.APP_DATA,
+    "marker_network.zip"
+  );
 
   return new Promise((resolve) => {
     zip
@@ -597,6 +658,15 @@ ipcMain.handle("publish", async () => {
             headers: { Authorization: `Bearer ${user.id_token}` },
           },
           function (err, res) {
+            if (designerWin) {
+              designerWin.webContents.send(
+                "cmd-log",
+                `Finished upload, success=${err == null} status_code=${
+                  res.statusCode
+                }\n`
+              );
+            }
+
             log.info("upload result", err, res.statusCode);
             resolve(res.statusCode);
           }
