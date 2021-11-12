@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "auth0": "2.37.0",
-    "axios": "^0.21.1",
+    "axios": "0.24.0",
     "electron-log": "4.4.1",
     "electron-updater": "^4.3.9",
     "form-data": "^4.0.0",
