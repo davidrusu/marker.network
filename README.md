@@ -1,4 +1,4 @@
-<img src="https://user-images.githubusercontent.com/1832378/142739772-34011e39-4d73-4aa8-a9ba-090261bef67b.png" width=64px />
+<a href="https://marker.network"><img src="https://user-images.githubusercontent.com/1832378/142739772-34011e39-4d73-4aa8-a9ba-090261bef67b.png" width=64px /></a>
 
 # Marker Network
 
